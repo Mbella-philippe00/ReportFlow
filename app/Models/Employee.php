@@ -22,32 +22,34 @@ class Employee extends Model
     ];
 
     /**
-     * Utilisateur associé à l'employé.
+     * Utilisateur associé.
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-    public function getFullNameAttribute(): string
-{
-    return trim($this->first_name . ' ' . $this->last_name);
-}
 
     /**
-     * Rapports hebdomadaires de l'employé.
+     * Rapports hebdomadaires.
      */
     public function weeklyReports(): HasMany
     {
         return $this->hasMany(WeeklyReport::class);
     }
 
-    
+    /**
+     * Nom complet.
+     */
+    public function getFullNameAttribute(): string
+    {
+        return trim($this->first_name . ' ' . $this->last_name);
+    }
 
     /**
-     * Nom affiché.
+     * Alias de compatibilité.
      */
     public function getDisplayNameAttribute(): string
     {
-        return "{$this->first_name} {$this->last_name}";
+        return $this->full_name;
     }
 }
