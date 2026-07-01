@@ -10,23 +10,23 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-{
-    Schema::create('weekly_reports', function (Blueprint $table) {
-        $table->id();
+    {
+        Schema::create('weekly_reports', function (Blueprint $table) {
+            $table->id();
 
-        $table->string('employee_name');
-        $table->string('week');
+            $table->string('employee_name');
+            $table->string('week');
 
-        $table->longText('activities')->nullable();
-        $table->longText('achievements')->nullable();
-        $table->longText('difficulties')->nullable();
-        $table->longText('next_actions')->nullable();
+            $table->longText('activities')->nullable();
+            $table->longText('achievements')->nullable();
+            $table->longText('difficulties')->nullable();
+            $table->longText('next_actions')->nullable();
 
-        $table->string('pptx_file')->nullable();
+            $table->string('pptx_file')->nullable();
 
-        $table->timestamps();
-    });
-}
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.

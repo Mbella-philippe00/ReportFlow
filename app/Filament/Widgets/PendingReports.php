@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,7 +19,7 @@ class PendingReports extends TableWidget
         return $table
             ->query(
                 WeeklyReport::query()
-                    ->where('status', 'submitted')
+                    ->where('status', ReportStatus::SUBMITTED)
                     ->latest()
             )
             ->columns([

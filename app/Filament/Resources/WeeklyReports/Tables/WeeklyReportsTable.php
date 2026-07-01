@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WeeklyReports\Tables;
 
+use App\Enums\ReportStatus;
 use App\Models\Employee;
 use App\Models\WeeklyReport;
 use App\Services\ExcelReportGenerator;
@@ -41,14 +42,8 @@ class WeeklyReportsTable
                 TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'submitted' => 'warning',
-                        'manager_approved' => 'info',
-                        'generated' => 'success',
-                        'rejected' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->formatStateUsing(fn (ReportStatus $state) => $state->label())
+                    ->color(fn (ReportStatus $state) => $state->color()),
 
                 TextColumn::make('validator.name')
                     ->label('Validé par')
@@ -98,13 +93,13 @@ class WeeklyReportsTable
 
                 SelectFilter::make('status')
                     ->label('Statut')
-                    ->options([
-                        'draft' => 'Brouillon',
-                        'submitted' => 'Soumis',
-                        'manager_approved' => 'Pré-validé',
-                        'generated' => 'Validé',
-                        'rejected' => 'Rejeté',
-                    ]),
+                    ->options(
+                        collect(ReportStatus::cases())
+                            ->mapWithKeys(fn (ReportStatus $status) => [
+                                $status->value => $status->label(),
+                            ])
+                            ->toArray()
+                    ),
 
                 SelectFilter::make('department')
                     ->label('Département')
@@ -126,13 +121,12 @@ class WeeklyReportsTable
             ])
 
             ->recordActions([
- Action::make('download')
+                Action::make('download')
                     ->label('Télécharger')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->visible(
-                        fn ($record) =>
-                            $record->status === 'generated'
+                        fn ($record) => $record->isGenerated()
                             && filled($record->pptx_file)
                     )
                     ->url(fn ($record) => Storage::url($record->pptx_file))
@@ -143,9 +137,8 @@ class WeeklyReportsTable
                     ->icon('heroicon-o-paper-airplane')
                     ->color('primary')
                     ->visible(
-                        fn ($record) =>
-                            auth()->user()->hasRole('employee')
-                            && $record->status === 'draft'
+                        fn ($record) => auth()->user()->hasRole('employee')
+                            && $record->isDraft()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -164,12 +157,11 @@ class WeeklyReportsTable
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->visible(
-                        fn ($record) =>
-                            auth()->user()->hasAnyRole([
-                                'manager',
-                                'super-admin',
-                            ])
-                            && $record->status === 'submitted'
+                        fn ($record) => auth()->user()->hasAnyRole([
+                            'manager',
+                            'super-admin',
+                        ])
+                            && $record->isSubmitted()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -188,9 +180,8 @@ class WeeklyReportsTable
                     ->icon('heroicon-o-check-badge')
                     ->color('success')
                     ->visible(
-                        fn ($record) =>
-                            auth()->user()->hasRole('super-admin')
-                            && $record->status === 'manager_approved'
+                        fn ($record) => auth()->user()->hasRole('super-admin')
+                            && $record->isManagerApproved()
                     )
                     ->requiresConfirmation()
                     ->action(function ($record) {
@@ -209,12 +200,11 @@ class WeeklyReportsTable
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->visible(
-                        fn ($record) =>
-                            auth()->user()->hasAnyRole([
-                                'manager',
-                                'super-admin',
-                            ])
-                            && $record->status === 'submitted'
+                        fn ($record) => auth()->user()->hasAnyRole([
+                            'manager',
+                            'super-admin',
+                        ])
+                            && $record->isSubmitted()
                     )
                     ->form([
                         Textarea::make('rejection_reason')
@@ -238,18 +228,17 @@ class WeeklyReportsTable
 
                 EditAction::make(),
             ])
-->toolbarActions([
+            ->toolbarActions([
 
                 Action::make('exportExcel')
                     ->label('Exporter Excel')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
                     ->visible(
-                        fn () =>
-                            auth()->user()->hasAnyRole([
-                                'manager',
-                                'super-admin',
-                            ])
+                        fn () => auth()->user()->hasAnyRole([
+                            'manager',
+                            'super-admin',
+                        ])
                     )
                     ->action(function () {
 
@@ -266,11 +255,10 @@ class WeeklyReportsTable
 
                     DeleteBulkAction::make()
                         ->visible(
-                            fn () =>
-                                auth()->user()->hasAnyRole([
-                                    'manager',
-                                    'super-admin',
-                                ])
+                            fn () => auth()->user()->hasAnyRole([
+                                'manager',
+                                'super-admin',
+                            ])
                         ),
 
                 ]),

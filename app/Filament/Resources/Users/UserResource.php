@@ -31,25 +31,27 @@ class UserResource extends Resource
     {
         return UsersTable::configure($table);
     }
+
     public static function canViewAny(): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canCreate(): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canEdit($record): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canDelete($record): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
+
     public static function getRelations(): array
     {
         return [

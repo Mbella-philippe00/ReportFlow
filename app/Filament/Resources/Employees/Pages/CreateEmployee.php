@@ -17,7 +17,7 @@ class CreateEmployee extends CreateRecord
         $temporaryPassword = Str::random(12);
 
         $user = User::create([
-            'name' => $data['first_name'] . ' ' . $data['last_name'],
+            'name' => $data['first_name'].' '.$data['last_name'],
             'email' => $data['email'],
             'password' => Hash::make($temporaryPassword),
         ]);

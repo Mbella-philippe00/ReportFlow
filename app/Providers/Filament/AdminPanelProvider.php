@@ -2,8 +2,13 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\ReportsStats;
+use App\Filament\Widgets\MonthlyReportsChart;
+use App\Filament\Widgets\PendingReports;
+use App\Filament\Widgets\RecentReports;
 use App\Filament\Widgets\ReportsByDepartmentChart;
+use App\Filament\Widgets\ReportsByStatusChart;
+use App\Filament\Widgets\ReportsStats;
+use App\Filament\Widgets\TopEmployees;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -20,11 +25,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use App\Filament\Widgets\TopEmployees;
-use App\Filament\Widgets\ReportsByStatusChart;
-use App\Filament\Widgets\RecentReports;
-use App\Filament\Widgets\MonthlyReportsChart;
-use App\Filament\Widgets\PendingReports;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->databaseNotifications()
-->databaseNotificationsPolling('30s')
+            ->databaseNotificationsPolling('30s')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -56,19 +56,19 @@ class AdminPanelProvider extends PanelProvider
                 for: 'App\\Filament\\Widgets'
             )
             ->widgets([
-    ReportsStats::class,
-    AccountWidget::class,
-    FilamentInfoWidget::class,
+                ReportsStats::class,
+                AccountWidget::class,
+                FilamentInfoWidget::class,
 
-    ReportsByDepartmentChart::class,
-    ReportsByStatusChart::class,
+                ReportsByDepartmentChart::class,
+                ReportsByStatusChart::class,
 
-    TopEmployees::class,
-    MonthlyReportsChart::class,
+                TopEmployees::class,
+                MonthlyReportsChart::class,
 
-    PendingReports::class,
-    RecentReports::class,
-])
+                PendingReports::class,
+                RecentReports::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -12,11 +13,11 @@ class ReportsStats extends StatsOverviewWidget
     {
         $totalReports = WeeklyReport::count();
 
-        $submitted = WeeklyReport::where('status', 'submitted')->count();
+        $submitted = WeeklyReport::where('status', ReportStatus::SUBMITTED)->count();
 
-        $generated = WeeklyReport::where('status', 'generated')->count();
+        $generated = WeeklyReport::where('status', ReportStatus::GENERATED)->count();
 
-        $rejected = WeeklyReport::where('status', 'rejected')->count();
+        $rejected = WeeklyReport::where('status', ReportStatus::REJECTED)->count();
 
         $validationRate = $totalReports > 0
             ? round(($generated / $totalReports) * 100, 1)
@@ -44,14 +45,14 @@ class ReportsStats extends StatsOverviewWidget
 
             Stat::make(
                 'Taux validation',
-                $validationRate . '%'
+                $validationRate.'%'
             )
                 ->description('Rapports validés')
                 ->color('success'),
 
             Stat::make(
                 'Taux rejet',
-                $rejectionRate . '%'
+                $rejectionRate.'%'
             )
                 ->description('Rapports rejetés')
                 ->color('danger'),

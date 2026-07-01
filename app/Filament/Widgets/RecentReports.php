@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -37,13 +38,8 @@ class RecentReports extends TableWidget
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'draft' => 'gray',
-                        'submitted' => 'warning',
-                        'generated' => 'success',
-                        'rejected' => 'danger',
-                        default => 'gray',
-                    }),
+                    ->formatStateUsing(fn (ReportStatus $state) => $state->label())
+                    ->color(fn (ReportStatus $state) => $state->color()),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Date')

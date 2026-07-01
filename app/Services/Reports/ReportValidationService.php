@@ -2,8 +2,10 @@
 
 namespace App\Services\Reports;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use App\Services\NotificationService;
+use Illuminate\Validation\ValidationException;
 
 class ReportValidationService
 {
@@ -12,16 +14,23 @@ class ReportValidationService
         protected ReportPresentationService $presentation,
         protected ReportMailService $mail,
         protected ActivityLogService $logs,
-    ) {
-    }
+    ) {}
 
     /**
      * Pré-validation par un manager.
      */
     public function managerApprove(WeeklyReport $report): void
     {
+        if (! $report->isSubmitted()) {
+            throw ValidationException::withMessages([
+                'status' => [
+                    'Only submitted reports can be approved.',
+                ],
+            ]);
+        }
+
         $report->update([
-            'status' => 'manager_approved',
+            'status' => ReportStatus::MANAGER_APPROVED,
             'validated_at' => now(),
             'validated_by' => auth()->id(),
         ]);
@@ -44,10 +53,18 @@ class ReportValidationService
      */
     public function finalApprove(WeeklyReport $report): void
     {
+        if (! $report->isManagerApproved()) {
+            throw ValidationException::withMessages([
+                'status' => [
+                    'Only manager approved reports can be finally approved.',
+                ],
+            ]);
+        }
+
         $pptx = $this->presentation->generatePowerPoint($report);
 
         $report->update([
-            'status' => 'generated',
+            'status' => ReportStatus::GENERATED,
             'validated_at' => now(),
             'validated_by' => auth()->id(),
             'generated_at' => now(),
@@ -73,8 +90,20 @@ class ReportValidationService
         WeeklyReport $report,
         string $reason
     ): void {
+
+        if (
+            ! $report->isSubmitted()
+            && ! $report->isManagerApproved()
+        ) {
+            throw ValidationException::withMessages([
+                'status' => [
+                    'Only submitted or manager approved reports can be rejected.',
+                ],
+            ]);
+        }
+
         $report->update([
-            'status' => 'rejected',
+            'status' => ReportStatus::REJECTED,
             'rejected_at' => now(),
             'rejected_by' => auth()->id(),
             'rejection_reason' => $reason,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use Filament\Widgets\ChartWidget;
 
@@ -16,10 +17,10 @@ class ReportsByStatusChart extends ChartWidget
                 [
                     'label' => 'Nombre de rapports',
                     'data' => [
-                        WeeklyReport::where('status', 'draft')->count(),
-                        WeeklyReport::where('status', 'submitted')->count(),
-                        WeeklyReport::where('status', 'rejected')->count(),
-                        WeeklyReport::where('status', 'generated')->count(),
+                        WeeklyReport::where('status', ReportStatus::DRAFT)->count(),
+                        WeeklyReport::where('status', ReportStatus::SUBMITTED)->count(),
+                        WeeklyReport::where('status', ReportStatus::REJECTED)->count(),
+                        WeeklyReport::where('status', ReportStatus::GENERATED)->count(),
                     ],
                 ],
             ],

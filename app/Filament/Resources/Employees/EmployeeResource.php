@@ -38,35 +38,33 @@ class EmployeeResource extends Resource
             //
         ];
     }
-   
 
-public static function canViewAny(): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canCreate(): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canCreate(): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canEdit($record): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canEdit($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function canDelete($record): bool
-{
-    return auth()->user()?->hasRole('super-admin') ?? false;
-}
+    public static function canDelete($record): bool
+    {
+        return auth()->user()?->hasRole('super-admin') ?? false;
+    }
 
-public static function getPages(): array
-{
-    return [
-        'index' => ListEmployees::route('/'),
-        'create' => CreateEmployee::route('/create'),
-        'edit' => EditEmployee::route('/{record}/edit'),
-    ];
-}
-
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListEmployees::route('/'),
+            'create' => CreateEmployee::route('/create'),
+            'edit' => EditEmployee::route('/{record}/edit'),
+        ];
+    }
 }

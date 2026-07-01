@@ -13,9 +13,9 @@ class MonthlyReportsChart extends ChartWidget
     protected function getData(): array
     {
         $reports = WeeklyReport::select(
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as total')
-            )
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('COUNT(*) as total')
+        )
             ->groupBy('month')
             ->orderBy('month')
             ->get();

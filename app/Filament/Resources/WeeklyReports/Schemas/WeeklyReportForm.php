@@ -21,7 +21,7 @@ class WeeklyReportForm
                     ->label('Employé')
                     ->options(
                         Employee::all()
-    ->pluck('full_name', 'id')
+                            ->pluck('full_name', 'id')
                     )
                     ->searchable()
                     ->required()
@@ -65,14 +65,14 @@ class WeeklyReportForm
                     ->rows(5),
 
                 Textarea::make('next_actions')
-    ->label('Actions prévues')
-    ->rows(5),
+                    ->label('Actions prévues')
+                    ->rows(5),
 
-Textarea::make('executive_summary')
-    ->label('Résumé exécutif IA')
-    ->rows(8)
-    ->columnSpanFull(),
-            
+                Textarea::make('executive_summary')
+                    ->label('Résumé exécutif IA')
+                    ->rows(8)
+                    ->columnSpanFull(),
+
             ]);
     }
 }

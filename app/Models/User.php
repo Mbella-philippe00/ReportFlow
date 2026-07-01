@@ -3,38 +3,43 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
+    use HasApiTokens;
+
     use HasFactory;
-    use Notifiable;
     use HasRoles;
+    use Notifiable;
+
     public function employee(): HasOne
-{
-    return $this->hasOne(Employee::class);
-}
-    
-   public function canAccessPanel(Panel $panel): bool
-{
-    return $this->hasAnyRole([
-        'super-admin',
-        'manager',
-        'employee',
-    ]);
-}
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->hasAnyRole([
+            'super-admin',
+            'manager',
+            'employee',
+        ]);
+    }
 
     /**
      * Get the attributes that should be cast.

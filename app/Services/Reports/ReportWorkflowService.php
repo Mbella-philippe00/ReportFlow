@@ -2,9 +2,11 @@
 
 namespace App\Services\Reports;
 
+use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use App\Services\AI\WeeklyReportAiService;
 use App\Services\NotificationService;
+use Illuminate\Validation\ValidationException;
 
 class ReportWorkflowService
 {
@@ -18,25 +20,27 @@ class ReportWorkflowService
      */
     public function submit(WeeklyReport $report): void
     {
-        // Mise à jour du statut
-        $report->update([
-            'status' => 'submitted',
-            'submitted_at' => now(),
-        ]);
-
-        // Génération IA si nécessaire
-        if (blank($report->executive_summary)) {
-            $summary = $this->ai->generateExecutiveSummary($report);
-
-            $report->update([
-                'executive_summary' => $summary,
+        if (! $report->isDraft()) {
+            throw ValidationException::withMessages([
+                'status' => [
+                    'Only draft reports can be submitted.',
+                ],
             ]);
         }
 
-        // Notification des managers
+        $report->update([
+            'status' => ReportStatus::SUBMITTED,
+            'submitted_at' => now(),
+        ]);
+
+        if (blank($report->executive_summary)) {
+            $report->update([
+                'executive_summary' => $this->ai->generateExecutiveSummary($report),
+            ]);
+        }
+
         $this->notifications->notifyManagers($report);
 
-        // Journalisation
         activity()
             ->performedOn($report)
             ->causedBy(auth()->user())

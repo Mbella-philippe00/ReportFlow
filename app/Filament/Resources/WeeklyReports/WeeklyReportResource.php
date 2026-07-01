@@ -38,44 +38,44 @@ class WeeklyReportResource extends Resource
         return [];
     }
 
-   public static function getEloquentQuery(): Builder
-{
-    $query = parent::getEloquentQuery()
-        ->with('employee');
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery()
+            ->with('employee');
 
-    $user = auth()->user();
+        $user = auth()->user();
 
-    // Super Admin : voit tout
-    if ($user?->hasRole('super-admin')) {
-        return $query;
-    }
+        // Super Admin : voit tout
+        if ($user?->hasRole('super-admin')) {
+            return $query;
+        }
 
-    // Manager : voit uniquement les rapports de son département
-    if ($user?->hasRole('manager')) {
+        // Manager : voit uniquement les rapports de son département
+        if ($user?->hasRole('manager')) {
 
-        $department = $user->employee?->department;
+            $department = $user->employee?->department;
 
-        return $query->where(
-            'department',
-            $department
-        );
-    }
-
-    // Employee : voit uniquement ses rapports
-    if ($user?->hasRole('employee')) {
-
-        return $query->whereHas('employee', function ($q) use ($user) {
-
-            $q->where(
-                'user_id',
-                $user->id
+            return $query->where(
+                'department',
+                $department
             );
-        });
-    }
+        }
 
-    // Aucun rôle reconnu
-    return $query->whereRaw('1 = 0');
-}
+        // Employee : voit uniquement ses rapports
+        if ($user?->hasRole('employee')) {
+
+            return $query->whereHas('employee', function ($q) use ($user) {
+
+                $q->where(
+                    'user_id',
+                    $user->id
+                );
+            });
+        }
+
+        // Aucun rôle reconnu
+        return $query->whereRaw('1 = 0');
+    }
 
     public static function getPages(): array
     {

@@ -23,8 +23,8 @@ class WeeklyReportSubmittedNotification extends Notification
     {
         return [
             'title' => 'Rapport soumis',
-            'message' => $this->report->employee->full_name .
-                ' a soumis le rapport ' .
+            'message' => $this->report->employee->full_name.
+                ' a soumis le rapport '.
                 $this->report->week,
 
             'report_id' => $this->report->id,

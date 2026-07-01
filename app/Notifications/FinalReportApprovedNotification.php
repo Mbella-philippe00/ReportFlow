@@ -30,12 +30,12 @@ class FinalReportApprovedNotification extends Notification
             ->success();
     }
 
-   public function toDatabase(object $notifiable): array
-{
-    return [
-        'title' => 'Rapport validé',
-        'message' => "Votre rapport {$this->report->week} a été validé définitivement.",
-        'report_id' => $this->report->id,
-    ];
-}
+    public function toDatabase(object $notifiable): array
+    {
+        return [
+            'title' => 'Rapport validé',
+            'message' => "Votre rapport {$this->report->week} a été validé définitivement.",
+            'report_id' => $this->report->id,
+        ];
+    }
 }

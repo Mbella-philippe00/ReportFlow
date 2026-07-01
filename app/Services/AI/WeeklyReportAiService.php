@@ -42,9 +42,9 @@ Le résumé doit :
 ";
 
         $response = Http::post(
-            'https://generativelanguage.googleapis.com/v1beta/models/' .
-            env('GEMINI_MODEL', 'gemini-2.5-flash') .
-            ':generateContent?key=' .
+            'https://generativelanguage.googleapis.com/v1beta/models/'.
+            env('GEMINI_MODEL', 'gemini-2.5-flash').
+            ':generateContent?key='.
             env('GEMINI_API_KEY'),
             [
                 'contents' => [
@@ -61,7 +61,7 @@ Le résumé doit :
 
         if (! $response->successful()) {
             throw new \Exception(
-                'Gemini Error: ' . $response->body()
+                'Gemini Error: '.$response->body()
             );
         }
 

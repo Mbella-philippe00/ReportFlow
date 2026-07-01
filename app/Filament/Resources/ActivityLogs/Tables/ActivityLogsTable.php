@@ -28,8 +28,7 @@ class ActivityLogsTable
                 Tables\Columns\TextColumn::make('subject_type')
                     ->label('Objet')
                     ->formatStateUsing(
-                        fn (?string $state) =>
-                            class_basename($state)
+                        fn (?string $state) => class_basename($state)
                     ),
 
                 Tables\Columns\TextColumn::make('subject_id')

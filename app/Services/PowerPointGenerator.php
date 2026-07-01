@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\WeeklyReport;
-use PhpOffice\PhpPresentation\PhpPresentation;
+use App\Services\AI\WeeklyReportAiService;
 use PhpOffice\PhpPresentation\IOFactory;
+use PhpOffice\PhpPresentation\PhpPresentation;
 use PhpOffice\PhpPresentation\Style\Alignment;
-
 
 class PowerPointGenerator
 {
@@ -14,7 +14,7 @@ class PowerPointGenerator
     {
         $employee = $report->employee;
 
-        $ppt = new PhpPresentation();
+        $ppt = new PhpPresentation;
 
         /*
         |--------------------------------------------------------------------------
@@ -56,7 +56,7 @@ class PowerPointGenerator
             ->setOffsetX(40)
             ->setOffsetY(40)
             ->createTextRun(
-                "OBJECTIFS\n\n" .
+                "OBJECTIFS\n\n".
                 ($report->objectives ?? 'Aucun objectif')
             );
 
@@ -74,7 +74,7 @@ class PowerPointGenerator
             ->setOffsetX(40)
             ->setOffsetY(40)
             ->createTextRun(
-                "ACTIVITÉS RÉALISÉES\n\n" .
+                "ACTIVITÉS RÉALISÉES\n\n".
                 ($report->activities ?? 'Aucune activité')
             );
 
@@ -92,17 +92,17 @@ class PowerPointGenerator
             ->setOffsetX(40)
             ->setOffsetY(40)
             ->createTextRun(
-                "DIFFICULTÉS RENCONTRÉES\n\n" .
+                "DIFFICULTÉS RENCONTRÉES\n\n".
                 ($report->difficulties ?? 'Aucune difficulté')
             );
 
-            /*
+        /*
         |--------------------------------------------------------------------------
         | Slide 5 - Résumé exécutif
         |--------------------------------------------------------------------------
         */
         $report->executive_summary = $report->executive_summary ?? app(
-            \App\Services\AI\WeeklyReportAiService::class
+            WeeklyReportAiService::class
         )->generateExecutiveSummary($report);
 
         /*
@@ -119,7 +119,7 @@ class PowerPointGenerator
             ->setOffsetX(40)
             ->setOffsetY(40)
             ->createTextRun(
-                "PRIORITÉS DE LA SEMAINE PROCHAINE\n\n" .
+                "PRIORITÉS DE LA SEMAINE PROCHAINE\n\n".
                 ($report->next_actions ?? 'Aucune priorité')
             );
 
@@ -136,30 +136,30 @@ class PowerPointGenerator
             ->setWidth(700)
             ->setOffsetX(50)
             ->setOffsetY(120)
-            ->createTextRun("Merci");
+            ->createTextRun('Merci');
 
         /*
         |--------------------------------------------------------------------------
         | Sauvegarde
         |--------------------------------------------------------------------------
         */
-$filename = sprintf(
-    'KBSAP_%s_%s.pptx',
-    str_replace(' ', '_', $employee->full_name),
-    str_replace(' ', '_', $report->week)
-);
+        $filename = sprintf(
+            'KBSAP_%s_%s.pptx',
+            str_replace(' ', '_', $employee->full_name),
+            str_replace(' ', '_', $report->week)
+        );
 
-$relativePath = 'reports/' . $filename;
+        $relativePath = 'reports/'.$filename;
 
-$absolutePath = storage_path('app/public/' . $relativePath);
+        $absolutePath = storage_path('app/public/'.$relativePath);
 
-if (! is_dir(dirname($absolutePath))) {
-    mkdir(dirname($absolutePath), 0777, true);
-}
+        if (! is_dir(dirname($absolutePath))) {
+            mkdir(dirname($absolutePath), 0777, true);
+        }
 
-$writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
-$writer->save($absolutePath);
+        $writer = IOFactory::createWriter($ppt, 'PowerPoint2007');
+        $writer->save($absolutePath);
 
-return $relativePath;
+        return $relativePath;
     }
 }

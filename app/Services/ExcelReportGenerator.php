@@ -5,13 +5,12 @@ namespace App\Services;
 use App\Models\WeeklyReport;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use App\Services\ExcelReportGenerator;
 
 class ExcelReportGenerator
 {
     public function generate(): string
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
 
         $sheet = $spreadsheet->getActiveSheet();
 
