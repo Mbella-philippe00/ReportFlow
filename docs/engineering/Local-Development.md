@@ -84,3 +84,37 @@ Use `http://localhost:8081` for every screenshot target:
 - Mobile: `http://localhost:8081/dashboard`
 - Dark mode: `http://localhost:8081/dashboard`
 - Light mode: `http://localhost:8081/dashboard`
+## Starting the Development Environment
+
+Always start the development environment in this order:
+
+1. Docker
+
+```bash
+docker compose up -d
+```
+
+2. Verify containers
+
+```bash
+docker compose ps
+```
+
+3. Start Vite **inside the Laravel container**
+
+```bash
+docker compose exec laravel.test npm run dev
+```
+
+4. Verify that `public/hot` exists
+
+```bash
+docker compose exec laravel.test cat public/hot
+```
+
+5. Open
+
+- http://localhost:8081
+- http://localhost:5173
+
+Never start Vite outside the active ReportFlow container.

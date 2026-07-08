@@ -12,6 +12,7 @@
         <title>{{ config('app.name', 'ReportFlow') }}</title>
 
         @fonts
+        @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/main.tsx'])
     </head>
     <body class="bg-background font-sans antialiased">
