@@ -1,4 +1,4 @@
-﻿import { env } from '@/config/env';
+import { env } from '@/config/env';
 import { useAuthStore } from '@/stores/auth.store';
 import type { ApiErrorResponse, ValidationErrors } from '@/types';
 
@@ -122,6 +122,19 @@ const serializeBody = (body: unknown, headers: Headers): BodyInit | undefined =>
     return JSON.stringify(body);
 };
 
+const handleUnauthorizedResponse = (authenticated: boolean) => {
+    if (!authenticated) {
+        return;
+    }
+
+    useAuthStore.getState().clearSession();
+
+    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.dispatchEvent(new CustomEvent('reportflow:auth-expired'));
+        window.location.assign('/login');
+    }
+};
+
 export const http = async <TResponse>(path: string, options: HttpRequestOptions = {}): Promise<TResponse> => {
     const { authenticated = true, body, headers: customHeaders, method = 'GET', ...requestOptions } = options;
     const headers = new Headers(customHeaders);
@@ -149,6 +162,10 @@ export const http = async <TResponse>(path: string, options: HttpRequestOptions 
         const payload = await parseResponse(response);
 
         if (!response.ok) {
+            if (response.status === 401) {
+                handleUnauthorizedResponse(authenticated);
+            }
+
             throw new HttpError(response.status, payload);
         }
 
@@ -157,4 +174,3 @@ export const http = async <TResponse>(path: string, options: HttpRequestOptions 
         requestSignal.cleanup();
     }
 };
-

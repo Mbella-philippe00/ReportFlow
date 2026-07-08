@@ -5,8 +5,10 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { GuestLayout } from '@/components/layout/GuestLayout';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { appConfig } from '@/config/app';
+import { LoginPage } from '@/features/auth';
 import { DashboardPage } from '@/features/dashboard';
 import { EmployeeActivityPage, EmployeeDetailsPage, EmployeeProfilePage, EmployeesListPage } from '@/features/employees';
+import { NotificationDetailsPage, NotificationsPage } from '@/features/notifications';
 import { ReportCreatePage, ReportDetailPage, ReportEditPage, ReportsListPage } from '@/features/reports';
 import { WorkflowApprovalPage, WorkflowPage } from '@/features/workflow';
 import { GuestRoute } from '@/routes/GuestRoute';
@@ -49,16 +51,7 @@ export function AppRouter() {
             <Routes>
                 <Route element={<GuestRoute />}>
                     <Route element={<GuestLayout />}>
-                        <Route
-                            element={
-                                <RoutePlaceholder
-                                    description="Authentication UI is intentionally deferred beyond the technical foundation phase."
-                                    title="Sign in"
-                                    variant="guest"
-                                />
-                            }
-                            path="/login"
-                        />
+                        <Route element={<LoginPage />} path="/login" />
                     </Route>
                 </Route>
 
@@ -71,15 +64,8 @@ export function AppRouter() {
                         <Route element={<ReportEditPage />} path="/reports/:id/edit" />
                         <Route element={<WorkflowPage />} path="/workflow" />
                         <Route element={<WorkflowApprovalPage />} path="/workflow/approvals/:id" />
-                        <Route
-                            element={
-                                <RoutePlaceholder
-                                    description="Notification navigation is wired. Notification features are intentionally deferred."
-                                    title="Notifications"
-                                />
-                            }
-                            path="/notifications"
-                        />
+                        <Route element={<NotificationsPage />} path="/notifications" />
+                        <Route element={<NotificationDetailsPage />} path="/notifications/:id" />
                         <Route element={<EmployeesListPage />} path="/employees" />
                         <Route element={<EmployeeDetailsPage />} path="/employees/:id" />
                         <Route element={<EmployeeProfilePage />} path="/employees/:id/profile" />

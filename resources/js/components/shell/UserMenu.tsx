@@ -1,10 +1,15 @@
-﻿import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, Settings, User } from 'lucide-react';
 import { useEffect, useId, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
+import { useLogoutMutation } from '@/features/auth/hooks/useAuth';
+import { useToast } from '@/providers/ToastProvider';
 import { useAuthStore } from '@/stores/auth.store';
 
 export function UserMenu() {
+    const navigate = useNavigate();
+    const { notify } = useToast();
+    const logoutMutation = useLogoutMutation();
     const [open, setOpen] = useState(false);
     const menuId = useId();
     const user = useAuthStore((state) => state.user);
@@ -26,6 +31,16 @@ export function UserMenu() {
 
         return () => document.removeEventListener('keydown', closeOnEscape);
     }, [open]);
+
+    const signOut = () => {
+        logoutMutation.mutate(undefined, {
+            onSettled: () => {
+                notify({ intent: 'success', title: 'Signed out' });
+                setOpen(false);
+                navigate('/login', { replace: true });
+            },
+        });
+    };
 
     return (
         <div className="relative">
@@ -59,6 +74,7 @@ export function UserMenu() {
                     <div className="p-1">
                         <Link
                             className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            onClick={() => setOpen(false)}
                             role="menuitem"
                             to="/profile"
                         >
@@ -67,6 +83,7 @@ export function UserMenu() {
                         </Link>
                         <Link
                             className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                            onClick={() => setOpen(false)}
                             role="menuitem"
                             to="/settings"
                         >
@@ -77,12 +94,13 @@ export function UserMenu() {
                     <div className="border-t p-1">
                         <button
                             className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60"
-                            disabled
+                            disabled={logoutMutation.isPending}
+                            onClick={signOut}
                             role="menuitem"
                             type="button"
                         >
                             <LogOut aria-hidden="true" className="size-4" />
-                            Sign out
+                            {logoutMutation.isPending ? 'Signing out?' : 'Sign out'}
                         </button>
                     </div>
                 </div>
@@ -90,4 +108,3 @@ export function UserMenu() {
         </div>
     );
 }
-

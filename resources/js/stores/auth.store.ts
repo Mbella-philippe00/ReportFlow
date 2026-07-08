@@ -1,9 +1,9 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 
 import { authStorage } from '@/lib/auth-storage';
 import type { AuthStatus, AuthUser } from '@/types';
 
-type AuthSession = {
+export type AuthSession = {
     token: string;
     user: AuthUser;
 };
@@ -13,6 +13,7 @@ type AuthState = {
     isAuthenticated: boolean;
     setSession: (session: AuthSession) => void;
     setStatus: (status: AuthStatus) => void;
+    setUser: (user: AuthUser) => void;
     status: AuthStatus;
     token: string | null;
     user: AuthUser | null;
@@ -21,7 +22,7 @@ type AuthState = {
 const initialSession = authStorage.read();
 const hasInitialSession = Boolean(initialSession.token && initialSession.user);
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
     clearSession: () => {
         authStorage.clear();
         set({
@@ -42,8 +43,17 @@ export const useAuthStore = create<AuthState>((set) => ({
         });
     },
     setStatus: (status) => set({ status }),
-    status: hasInitialSession ? 'authenticated' : 'idle',
+    setUser: (user) => {
+        const token = get().token;
+
+        if (!token) {
+            return;
+        }
+
+        authStorage.write({ token, user });
+        set({ user });
+    },
+    status: hasInitialSession ? 'checking' : 'idle',
     token: initialSession.token,
     user: initialSession.user,
 }));
-
