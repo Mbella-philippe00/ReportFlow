@@ -1,9 +1,105 @@
-@import 'tailwindcss';
+﻿@import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js/**/*.{ts,tsx}';
+@source '../views/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-background: #f8fafc;
+    --color-foreground: #0f172a;
+    --color-surface: #ffffff;
+    --color-surface-foreground: #0f172a;
+    --color-primary: #2563eb;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #475569;
+    --color-secondary-foreground: #ffffff;
+    --color-success: #16a34a;
+    --color-success-foreground: #ffffff;
+    --color-warning: #d97706;
+    --color-warning-foreground: #111827;
+    --color-danger: #dc2626;
+    --color-danger-foreground: #ffffff;
+    --color-muted: #e2e8f0;
+    --color-muted-foreground: #64748b;
+    --color-border: #cbd5e1;
+
+    --radius-xs: 0.25rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.25rem;
+
+    --shadow-soft: 0 18px 45px -24px rgb(15 23 42 / 0.35);
+    --shadow-elevated: 0 22px 60px -28px rgb(15 23 42 / 0.45);
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+
+    --leading-tight: 1.25;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
 }
+
+@layer base {
+    :root {
+        color-scheme: light;
+    }
+
+    .dark {
+        --color-background: #020617;
+        --color-foreground: #e2e8f0;
+        --color-surface: #0f172a;
+        --color-surface-foreground: #f8fafc;
+        --color-primary: #60a5fa;
+        --color-primary-foreground: #082f49;
+        --color-secondary: #94a3b8;
+        --color-secondary-foreground: #0f172a;
+        --color-success: #4ade80;
+        --color-success-foreground: #052e16;
+        --color-warning: #fbbf24;
+        --color-warning-foreground: #451a03;
+        --color-danger: #f87171;
+        --color-danger-foreground: #450a0a;
+        --color-muted: #1e293b;
+        --color-muted-foreground: #94a3b8;
+        --color-border: #334155;
+        color-scheme: dark;
+    }
+
+    * {
+        border-color: var(--color-border);
+    }
+
+    html {
+        min-height: 100%;
+        background: var(--color-background);
+    }
+
+    body {
+        min-height: 100vh;
+        margin: 0;
+        background: var(--color-background);
+        color: var(--color-foreground);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+    }
+}
+

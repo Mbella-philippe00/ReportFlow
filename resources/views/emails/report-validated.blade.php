@@ -1,15 +1,15 @@
-<h2>Rapport validé</h2>
+﻿<h2>Rapport validÃ©</h2>
 
 <p>Bonjour,</p>
 
 <p>
 Votre rapport de la semaine
 <strong>{{ $report->week }}</strong>
-a été validé.
+a Ã©tÃ© validÃ©.
 </p>
 
 <p>
-Le PowerPoint a été généré avec succès.
+Le PowerPoint a Ã©tÃ© gÃ©nÃ©rÃ© avec succÃ¨s.
 </p>
 
 <p>

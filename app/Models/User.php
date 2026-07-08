@@ -19,13 +19,13 @@ use Spatie\Permission\Traits\HasRoles;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements FilamentUser
-{
-    /** @use HasFactory<UserFactory> */
-    use HasApiTokens;
+{use HasApiTokens;
 
-    use HasFactory;
-    use HasRoles;
-    use Notifiable;
+/** @use HasFactory<UserFactory> */
+use HasFactory;
+
+use HasRoles;
+use Notifiable;
 
     public function employee(): HasOne
     {

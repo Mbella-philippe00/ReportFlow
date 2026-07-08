@@ -41,23 +41,23 @@ Le résumé doit :
 - annoncer les prochaines actions.
 ";
 
-        $response = Http::post(
-            'https://generativelanguage.googleapis.com/v1beta/models/'.
-            env('GEMINI_MODEL', 'gemini-2.5-flash').
-            ':generateContent?key='.
-            env('GEMINI_API_KEY'),
+       $response = Http::post(
+    'https://generativelanguage.googleapis.com/v1beta/models/'
+        . config('services.gemini.model')
+        . ':generateContent?key='
+        . config('services.gemini.api_key'),
+    [
+        'contents' => [
             [
-                'contents' => [
+                'parts' => [
                     [
-                        'parts' => [
-                            [
-                                'text' => $prompt,
-                            ],
-                        ],
+                        'text' => $prompt,
                     ],
                 ],
-            ]
-        );
+            ],
+        ],
+    ]
+);
 
         if (! $response->successful()) {
             throw new \Exception(

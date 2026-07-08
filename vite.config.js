@@ -2,11 +2,19 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { fileURLToPath, URL } from 'node:url';
+
+const ignoredWatchPaths = [
+    /(^|[/\\])public([/\\]|$)/,
+    /(^|[/\\])storage[/\\]framework[/\\]views([/\\]|$)/,
+];
 
 export default defineConfig({
+    publicDir: false,
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/js/main.tsx'],
             refresh: true,
             fonts: [
                 bunny('Instrument Sans', {
@@ -14,11 +22,26 @@ export default defineConfig({
                 }),
             ],
         }),
+        react(),
         tailwindcss(),
     ],
+    resolve: {
+        alias: {
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
+        },
+    },
     server: {
+        host: '0.0.0.0',
+        hmr: {
+            host: 'localhost',
+            protocol: 'ws',
+        },
+        strictPort: true,
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            usePolling: true,
+            interval: 300,
+            followSymlinks: false,
+            ignored: ignoredWatchPaths,
         },
     },
 });

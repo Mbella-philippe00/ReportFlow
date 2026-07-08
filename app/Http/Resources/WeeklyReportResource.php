@@ -31,14 +31,11 @@ class WeeklyReportResource extends JsonResource
             'department' => $this->department,
 
             'week' => $this->week,
-
-            'status' => $this->status
-    ? [
-        'value' => $this->status->value,
-        'label' => $this->status->label(),
-        'color' => $this->status->color(),
-    ]
-    : null,
+'status' => [
+    'value' => $this->status->value,
+    'label' => $this->status->label(),
+    'color' => $this->status->color(),
+],
 
             'objectives' => $this->objectives,
 

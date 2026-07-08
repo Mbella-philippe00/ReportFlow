@@ -16,6 +16,8 @@ class EmployeeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $roles = $this->user?->getRoleNames()->values() ?? collect();
+
         return [
 
             'id' => $this->id,
@@ -32,10 +34,17 @@ class EmployeeResource extends JsonResource
 
             'active' => $this->active,
 
+            'role' => $roles->first(),
+
+            'roles' => $roles,
+
+            'reports_count' => $this->whenCounted('weeklyReports'),
+
             'user' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
                 'email' => $this->user?->email,
+                'roles' => $roles,
             ],
 
             'created_at' => $this->created_at,

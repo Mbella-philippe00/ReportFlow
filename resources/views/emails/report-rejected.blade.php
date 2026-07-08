@@ -1,11 +1,11 @@
-<h2>Rapport rejeté</h2>
+﻿<h2>Rapport rejetÃ©</h2>
 
 <p>Bonjour,</p>
 
 <p>
 Votre rapport de la semaine
 <strong>{{ $report->week }}</strong>
-a été rejeté.
+a Ã©tÃ© rejetÃ©.
 </p>
 
 <p>
@@ -14,7 +14,7 @@ a été rejeté.
 </p>
 
 <p>
-Veuillez corriger le rapport puis le soumettre à nouveau.
+Veuillez corriger le rapport puis le soumettre Ã  nouveau.
 </p>
 
 <p>

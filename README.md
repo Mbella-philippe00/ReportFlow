@@ -1,58 +1,83 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ReportFlow
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+ReportFlow is an enterprise SaaS application for weekly reporting workflows, approvals, AI-assisted summaries, PowerPoint generation, activity logs, and role-based access control.
 
-## About Laravel
+The backend is Laravel/Sanctum and the frontend is a React + TypeScript SPA served by Laravel through Vite.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Official Local Development URL
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Use this URL for all local development, browser verification, screenshots, and manual QA:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```text
+http://localhost:8081
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Do not use `http://localhost` as the ReportFlow application URL. Port `80` may be used by another local project or container on the developer machine.
 
-## Contributing
+## Local Environment
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+The local Docker/Sail mapping is configured through `APP_PORT`:
 
-## Code of Conduct
+```env
+APP_URL=http://localhost:8081
+APP_PORT=8081
+VITE_APP_NAME=ReportFlow
+VITE_API_BASE_URL=/api
+VITE_ROUTER_BASENAME=/
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+The React SPA is mounted by Laravel from `resources/views/welcome.blade.php` and loaded through `resources/js/main.tsx`.
 
-## Security Vulnerabilities
+## Development Commands
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Start the local stack:
 
-## License
+```bash
+docker compose up -d
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Run Vite inside the Laravel/Sail container:
+
+```bash
+docker compose exec laravel.test npm run dev
+```
+
+Run frontend checks:
+
+```bash
+docker compose exec laravel.test npm run typecheck
+docker compose exec laravel.test npm run build
+```
+
+Clear Laravel caches after environment or route changes:
+
+```bash
+docker compose exec laravel.test php artisan optimize:clear
+```
+
+## Verification URLs
+
+Use these URLs when verifying the app:
+
+```text
+http://localhost:8081
+http://localhost:8081/dashboard
+http://localhost:8081/login
+http://localhost:8081/api/dashboard
+```
+
+Expected API behavior:
+
+- `GET http://localhost:8081/api/dashboard` returns `401` without a Sanctum Bearer token.
+- Authenticated Dashboard requests are made against same-origin `/api` endpoints.
+- BrowserRouter routes such as `/dashboard` must be opened through `http://localhost:8081/dashboard`.
+
+## Screenshot Rule
+
+All desktop, tablet, mobile, dark mode, and light mode screenshots must use:
+
+```text
+http://localhost:8081
+```
+
+Do not capture ReportFlow screenshots from `http://localhost` unless `APP_PORT=80` has been explicitly approved for that session.
