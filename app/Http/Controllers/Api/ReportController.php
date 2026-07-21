@@ -9,15 +9,22 @@ use App\Http\Requests\UpdateWeeklyReportRequest;
 use App\Http\Resources\WeeklyReportResource;
 use App\Models\WeeklyReport;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class ReportController extends Controller
 {
-    /**
-     * Liste des rapports.
-     */
     public function index(): JsonResponse
     {
-        $reports = WeeklyReport::latest()->paginate(15);
+        Gate::authorize('viewAny', WeeklyReport::class);
+
+        $query = WeeklyReport::query()->latest();
+        $user = request()->user();
+
+        if ($user && $user->hasRole('employee') && ! $user->hasAnyRole(['manager', 'super-admin'])) {
+            $query->where('employee_id', $user->employee?->id);
+        }
+
+        $reports = $query->paginate(15);
 
         return response()->json([
             'success' => true,
@@ -31,11 +38,10 @@ class ReportController extends Controller
         ]);
     }
 
-    /**
-     * Création d'un rapport.
-     */
     public function store(StoreWeeklyReportRequest $request): JsonResponse
     {
+        Gate::authorize('create', WeeklyReport::class);
+
         $report = WeeklyReport::create([
             ...$request->validated(),
             'status' => ReportStatus::DRAFT,
@@ -45,53 +51,43 @@ class ReportController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Rapport créé avec succès.',
+            'message' => 'Report created successfully.',
             'data' => new WeeklyReportResource($report),
         ], 201);
     }
 
-    /**
-     * Affichage d'un rapport.
-     */
     public function show(WeeklyReport $report): JsonResponse
     {
+        Gate::authorize('view', $report);
+
         return response()->json([
             'success' => true,
             'data' => new WeeklyReportResource($report),
         ]);
     }
 
-    /**
-     * Mise à jour d'un rapport.
-     */
-    public function update(
-        UpdateWeeklyReportRequest $request,
-        WeeklyReport $report
-    ): JsonResponse {
+    public function update(UpdateWeeklyReportRequest $request, WeeklyReport $report): JsonResponse
+    {
+        Gate::authorize('update', $report);
 
-        $report->update(
-            $request->validated()
-        );
+        $report->update($request->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'Rapport mis à jour.',
-            'data' => new WeeklyReportResource($report),
+            'message' => 'Report updated.',
+            'data' => new WeeklyReportResource($report->fresh()),
         ]);
     }
 
-    /**
-     * Suppression d'un rapport.
-     */
-    public function destroy(
-        WeeklyReport $report
-    ): JsonResponse {
+    public function destroy(WeeklyReport $report): JsonResponse
+    {
+        Gate::authorize('delete', $report);
 
         $report->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Rapport supprimé.',
+            'message' => 'Report deleted.',
         ]);
     }
 }

@@ -44,7 +44,8 @@ class ReportCrudTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $report = $this->createDraftReport();
+        $employee = $this->createEmployee($user);
+        $report = $this->createDraftReport($employee);
 
         $response = $this->putJson(
             "/api/reports/{$report->id}",
@@ -111,7 +112,8 @@ class ReportCrudTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $report = WeeklyReport::factory()->create();
+        $employee = $this->createEmployee($user);
+        $report = $this->createDraftReport($employee);
 
         $response = $this->getJson("/api/reports/{$report->id}");
 
@@ -128,7 +130,8 @@ class ReportCrudTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $report = $this->createDraftReport();
+        $employee = $this->createEmployee($user);
+        $report = $this->createDraftReport($employee);
 
         $response = $this->deleteJson(
             "/api/reports/{$report->id}"

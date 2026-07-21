@@ -2,122 +2,87 @@
 
 namespace Tests\Feature\Workflow;
 
-use App\Services\Reports\ActivityLogService;
-use App\Services\Reports\ReportMailService;
+use App\Notifications\WeeklyReportRejectedNotification;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
-use Mockery;
 use Tests\TestCase;
 
 class RejectReportTest extends TestCase
 {
     public function test_manager_can_reject_a_submitted_report(): void
     {
+        Notification::fake();
+        Mail::fake();
+
         $manager = $this->createManager();
+        $employeeUser = $this->createEmployeeUser();
+        $employee = $this->createEmployee($employeeUser);
+        $report = $this->createSubmittedReport($employee);
 
         Sanctum::actingAs($manager);
 
-        $report = $this->createSubmittedReport();
-
-        $mail = Mockery::mock(ReportMailService::class);
-
-        $mail->shouldReceive('sendRejectionMail')
-            ->once();
-
-        $this->app->instance(
-            ReportMailService::class,
-            $mail
-        );
-
-        $logs = Mockery::mock(ActivityLogService::class);
-
-        $logs->shouldReceive('log')
-            ->once();
-
-        $this->app->instance(
-            ActivityLogService::class,
-            $logs
-        );
-
-        $response = $this->postJson(
-            "/api/reports/{$report->id}/reject",
-            [
-                'reason' => 'Informations incomplètes',
-            ]
-        );
+        $response = $this->postJson("/api/reports/{$report->id}/reject", [
+            'reason' => 'Missing measurable outcomes.',
+        ]);
 
         $response
             ->assertOk()
-            ->assertJson([
-                'success' => true,
-            ]);
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.status.value', 'rejected')
+            ->assertJsonPath('data.rejection_reason', 'Missing measurable outcomes.');
 
         $report->refresh();
 
-        $this->assertEquals(
-            'rejected',
-            $report->status->value
-        );
+        $this->assertSame('rejected', $report->status->value);
+        $this->assertNotNull($report->rejected_at);
+        $this->assertEquals($manager->id, $report->rejected_by);
+        $this->assertSame('Missing measurable outcomes.', $report->rejection_reason);
 
-        $this->assertNotNull(
-            $report->rejected_at
-        );
+        Notification::assertSentTo($employeeUser, WeeklyReportRejectedNotification::class);
+    }
 
-        $this->assertEquals(
-            $manager->id,
-            $report->rejected_by
-        );
+    public function test_super_admin_can_reject_an_under_review_report(): void
+    {
+        Notification::fake();
+        Mail::fake();
 
-        $this->assertEquals(
-            'Informations incomplètes',
-            $report->rejection_reason
-        );
+        $admin = $this->createSuperAdmin();
+        $report = $this->createApprovedReport();
+
+        Sanctum::actingAs($admin);
+
+        $this->postJson("/api/reports/{$report->id}/reject", [
+            'reason' => 'Final review found missing context.',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.status.value', 'rejected');
     }
 
     public function test_draft_report_cannot_be_rejected(): void
     {
-        $manager = $this->createManager();
+        Sanctum::actingAs($this->createManager());
 
-        Sanctum::actingAs($manager);
-
-        $report = $this->createDraftReport();
-
-        $this->postJson(
-            "/api/reports/{$report->id}/reject",
-            [
-                'reason' => 'Test',
-            ]
-        )->assertStatus(422);
+        $this->postJson("/api/reports/{$this->createDraftReport()->id}/reject", [
+            'reason' => 'Test',
+        ])->assertForbidden();
     }
 
-    public function test_generated_report_cannot_be_rejected(): void
+    public function test_approved_report_cannot_be_rejected(): void
     {
-        $manager = $this->createManager();
+        Sanctum::actingAs($this->createManager());
 
-        Sanctum::actingAs($manager);
-
-        $report = $this->createGeneratedReport();
-
-        $this->postJson(
-            "/api/reports/{$report->id}/reject",
-            [
-                'reason' => 'Test',
-            ]
-        )->assertStatus(422);
+        $this->postJson("/api/reports/{$this->createGeneratedReport()->id}/reject", [
+            'reason' => 'Test',
+        ])->assertForbidden();
     }
 
     public function test_rejected_report_cannot_be_rejected_twice(): void
     {
-        $manager = $this->createManager();
+        Sanctum::actingAs($this->createManager());
 
-        Sanctum::actingAs($manager);
-
-        $report = $this->createRejectedReport();
-
-        $this->postJson(
-            "/api/reports/{$report->id}/reject",
-            [
-                'reason' => 'Test',
-            ]
-        )->assertStatus(422);
+        $this->postJson("/api/reports/{$this->createRejectedReport()->id}/reject", [
+            'reason' => 'Test',
+        ])->assertForbidden();
     }
 }

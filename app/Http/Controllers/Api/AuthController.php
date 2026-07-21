@@ -7,6 +7,8 @@ use App\Http\Requests\LoginRequest;
 use App\Services\Auth\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -19,10 +21,27 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        $result = $this->auth->login(
-            $request->validated('email'),
-            $request->validated('password'),
-        );
+        try {
+            $result = $this->auth->login(
+                $request->validated('email'),
+                $request->validated('password'),
+            );
+        } catch (ValidationException $exception) {
+            Log::channel('security')->warning('auth.login.failed', [
+                'email' => $request->validated('email'),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            throw $exception;
+        }
+
+        Log::channel('security')->info('auth.login.success', [
+            'user_id' => $result['user']->id,
+            'email' => $result['user']->email,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -46,7 +65,15 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $this->auth->logout($request->user());
+        $user = $request->user();
+
+        $this->auth->logout($user);
+
+        Log::channel('security')->info('auth.logout', [
+            'user_id' => $user?->id,
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -76,5 +103,13 @@ class AuthController extends Controller
                 'employee' => $user->employee,
             ],
         ]);
+    }
+
+    /**
+     * Backward-compatible Sanctum user endpoint.
+     */
+    public function user(Request $request): JsonResponse
+    {
+        return response()->json($request->user());
     }
 }

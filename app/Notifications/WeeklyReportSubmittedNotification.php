@@ -22,12 +22,12 @@ class WeeklyReportSubmittedNotification extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Rapport soumis',
-            'message' => $this->report->employee->full_name.
-                ' a soumis le rapport '.
-                $this->report->week,
-
+            'type' => 'workflow',
+            'title' => 'Report submitted',
+            'message' => $this->report->employee->full_name.' submitted the '.$this->report->week.' weekly report.',
             'report_id' => $this->report->id,
+            'employee_id' => $this->report->employee_id,
+            'action_url' => "/workflow/approvals/{$this->report->id}",
         ];
     }
 }

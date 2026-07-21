@@ -20,7 +20,7 @@ class ReportsByStatusChart extends ChartWidget
                         WeeklyReport::where('status', ReportStatus::DRAFT)->count(),
                         WeeklyReport::where('status', ReportStatus::SUBMITTED)->count(),
                         WeeklyReport::where('status', ReportStatus::REJECTED)->count(),
-                        WeeklyReport::where('status', ReportStatus::GENERATED)->count(),
+                        WeeklyReport::where('status', ReportStatus::APPROVED)->count(),
                     ],
                 ],
             ],

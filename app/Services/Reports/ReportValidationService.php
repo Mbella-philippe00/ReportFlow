@@ -5,7 +5,6 @@ namespace App\Services\Reports;
 use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use App\Services\NotificationService;
-use Illuminate\Validation\ValidationException;
 
 class ReportValidationService
 {
@@ -14,93 +13,68 @@ class ReportValidationService
         protected ReportPresentationService $presentation,
         protected ReportMailService $mail,
         protected ActivityLogService $logs,
+        protected WorkflowStateMachine $stateMachine,
     ) {}
 
-    /**
-     * Pré-validation par un manager.
-     */
-    public function managerApprove(WeeklyReport $report): void
+    public function managerApprove(WeeklyReport $report, ?string $comment = null): void
     {
-        if (! $report->isSubmitted()) {
-            throw ValidationException::withMessages([
-                'status' => [
-                    'Only submitted reports can be approved.',
-                ],
-            ]);
-        }
+        $this->stateMachine->assertCanTransition($report, ReportStatus::UNDER_REVIEW);
 
         $report->update([
-            'status' => ReportStatus::MANAGER_APPROVED,
+            'status' => ReportStatus::UNDER_REVIEW,
+            'under_review_at' => now(),
             'validated_at' => now(),
             'validated_by' => auth()->id(),
+            'manager_comment' => $comment,
         ]);
 
-        $this->notifications->notifySuperAdmins($report);
-
-        $this->mail->sendValidationMail($report);
+        $this->notifications->notifySuperAdmins($report->fresh());
 
         $this->logs->log(
-            $report,
-            'Rapport pré-validé par manager',
+            $report->fresh(),
+            'Report moved under review',
             [
+                'event' => 'under_review',
+                'to' => ReportStatus::UNDER_REVIEW->value,
                 'week' => $report->week,
-            ]
+                'comment' => $comment,
+            ],
         );
     }
 
-    /**
-     * Validation finale.
-     */
     public function finalApprove(WeeklyReport $report): void
     {
-        if (! $report->isManagerApproved()) {
-            throw ValidationException::withMessages([
-                'status' => [
-                    'Only manager approved reports can be finally approved.',
-                ],
-            ]);
-        }
+        $this->stateMachine->assertCanTransition($report, ReportStatus::APPROVED);
 
         $pptx = $this->presentation->generatePowerPoint($report);
+        $approvedAt = now();
 
         $report->update([
-            'status' => ReportStatus::GENERATED,
-            'validated_at' => now(),
-            'validated_by' => auth()->id(),
-            'generated_at' => now(),
+            'status' => ReportStatus::APPROVED,
+            'approved_at' => $approvedAt,
+            'approved_by' => auth()->id(),
+            'generated_at' => $approvedAt,
             'pptx_file' => $pptx,
         ]);
 
-        $this->notifications->notifyEmployee($report);
+        $this->notifications->notifyEmployee($report->fresh());
+        $this->mail->sendValidationMail($report->fresh());
 
         $this->logs->log(
-            $report,
-            'Rapport validé définitivement',
+            $report->fresh(),
+            'Report approved',
             [
+                'event' => 'approved',
+                'to' => ReportStatus::APPROVED->value,
                 'week' => $report->week,
                 'pptx_generated' => true,
-            ]
+            ],
         );
     }
 
-    /**
-     * Rejet d'un rapport.
-     */
-    public function reject(
-        WeeklyReport $report,
-        string $reason
-    ): void {
-
-        if (
-            ! $report->isSubmitted()
-            && ! $report->isManagerApproved()
-        ) {
-            throw ValidationException::withMessages([
-                'status' => [
-                    'Only submitted or manager approved reports can be rejected.',
-                ],
-            ]);
-        }
+    public function reject(WeeklyReport $report, string $reason): void
+    {
+        $this->stateMachine->assertCanTransition($report, ReportStatus::REJECTED);
 
         $report->update([
             'status' => ReportStatus::REJECTED,
@@ -109,14 +83,18 @@ class ReportValidationService
             'rejection_reason' => $reason,
         ]);
 
-        $this->mail->sendRejectionMail($report);
+        $this->notifications->notifyEmployeeRejected($report->fresh());
+        $this->mail->sendRejectionMail($report->fresh());
 
         $this->logs->log(
-            $report,
-            'Rapport rejeté',
+            $report->fresh(),
+            'Report rejected',
             [
+                'event' => 'rejected',
+                'to' => ReportStatus::REJECTED->value,
+                'week' => $report->week,
                 'reason' => $reason,
-            ]
+            ],
         );
     }
 }

@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { NoPermission } from '@/components/business/common/NoPermission';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Alert, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyState, Pagination, Skeleton } from '@/components/ui';
-import { useReportsQuery } from '@/features/reports/hooks/useReports';
+import { Alert, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyState, Skeleton } from '@/components/ui';
 import { useAuthStore } from '@/stores/auth.store';
 import type { ReportWorkflowAction, WeeklyReport } from '@/types';
 
@@ -14,6 +13,7 @@ import { RejectionDialog } from '../components/RejectionDialog';
 import { WorkflowConfirmDialog } from '../components/WorkflowConfirmDialog';
 import { WorkflowHistory } from '../components/WorkflowHistory';
 import { useWorkflowActionRunner } from '../hooks/useWorkflowActionRunner';
+import { useWorkflowQueueQuery } from '../hooks/useWorkflow';
 import { getWorkflowCapabilities, hasAnyWorkflowPermission, isPendingApprovalStatus } from '../utils/workflow-utils';
 
 const getErrorMessage = (error: unknown): string => (error instanceof Error ? error.message : 'Workflow data could not be loaded.');
@@ -25,7 +25,7 @@ type ConfirmActionState = {
 
 function WorkflowPageSkeleton() {
     return (
-        <PageContainer description="Loading workflow reports from the backend." eyebrow="Workflow" title="Workflow">
+        <PageContainer description="Loading your workflow queue from the backend." eyebrow="Workflow" title="Workflow">
             <div className="grid gap-4 md:grid-cols-4">
                 <Skeleton className="h-32" />
                 <Skeleton className="h-32" />
@@ -60,18 +60,16 @@ function MetricCard({ description, icon: Icon, title, value }: { description: st
 export function WorkflowPage() {
     const navigate = useNavigate();
     const user = useAuthStore((state) => state.user);
-    const [page, setPage] = useState(1);
     const [confirmAction, setConfirmAction] = useState<ConfirmActionState | null>(null);
     const [rejectionReport, setRejectionReport] = useState<WeeklyReport | null>(null);
-    const reportsQuery = useReportsQuery({ page });
+    const queueQuery = useWorkflowQueueQuery();
     const { isPending, pendingAction, runWorkflowAction } = useWorkflowActionRunner();
 
     useEffect(() => {
         document.title = 'Workflow - ReportFlow';
     }, []);
 
-    const reports = reportsQuery.data?.data ?? [];
-    const meta = reportsQuery.data?.meta;
+    const reports = queueQuery.data?.data ?? [];
 
     const pendingApprovals = useMemo(() => reports.filter((report) => isPendingApprovalStatus(report.status.value)), [reports]);
     const myPendingActions = useMemo(
@@ -79,7 +77,7 @@ export function WorkflowPage() {
         [reports, user],
     );
     const rejectedReports = useMemo(() => reports.filter((report) => report.status.value === 'rejected'), [reports]);
-    const completedReports = useMemo(() => reports.filter((report) => report.status.value === 'generated'), [reports]);
+    const approvedReports = useMemo(() => reports.filter((report) => report.status.value === 'approved'), [reports]);
 
     const openApproval = (report: WeeklyReport) => navigate(`/workflow/approvals/${report.id}`);
 
@@ -100,57 +98,57 @@ export function WorkflowPage() {
             <PageContainer description="Workflow actions require report workflow permissions." eyebrow="Workflow" title="Workflow">
                 <NoPermission
                     action={{ label: 'Go to dashboard', onClick: () => navigate('/dashboard') }}
-                    description="Your account does not expose submit, approve, final-approve, or reject workflow permissions."
+                    description="Your account does not expose submit, review, approve, or reject workflow permissions."
                     title="Workflow access restricted"
                 />
             </PageContainer>
         );
     }
 
-    if (reportsQuery.isLoading) {
+    if (queueQuery.isLoading) {
         return <WorkflowPageSkeleton />;
     }
 
-    if (reportsQuery.isError) {
+    if (queueQuery.isError) {
         return (
-            <PageContainer description="The Reports API could not provide workflow data." eyebrow="Workflow" title="Workflow">
-                <Alert intent="danger" icon={<AlertCircle aria-hidden="true" className="size-5" />} title="Unable to load workflow" description={getErrorMessage(reportsQuery.error)} />
+            <PageContainer description="The Workflow Queue API could not provide workflow data." eyebrow="Workflow" title="Workflow">
+                <Alert intent="danger" icon={<AlertCircle aria-hidden="true" className="size-5" />} title="Unable to load workflow" description={getErrorMessage(queueQuery.error)} />
             </PageContainer>
         );
     }
 
     return (
-        <PageContainer description="Review reports moving through submission, manager approval, final approval, and rejection." eyebrow="Workflow" title="Workflow">
+        <PageContainer description="Review reports moving through Draft, Submitted, Under Review, Approved, and Rejected." eyebrow="Workflow" title="Workflow">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-                <MetricCard description="Submitted or manager-approved reports on this API page." icon={Clock3} title="Pending approvals" value={pendingApprovals.length} />
-                <MetricCard description="Reports where your permissions expose at least one action." icon={GitPullRequest} title="My pending actions" value={myPendingActions.length} />
-                <MetricCard description="Reports that reached final approval and generation." icon={CheckCircle2} title="Final approved" value={completedReports.length} />
+                <MetricCard description="Submitted or under-review reports in your backend queue." icon={Clock3} title="Pending workflow" value={pendingApprovals.length} />
+                <MetricCard description="Reports where your current permissions expose at least one action." icon={GitPullRequest} title="My pending actions" value={myPendingActions.length} />
+                <MetricCard description="Reports that reached final approval and are read-only." icon={CheckCircle2} title="Approved" value={approvedReports.length} />
                 <MetricCard description="Reports returned to their author for correction." icon={XCircle} title="Rejected" value={rejectedReports.length} />
             </div>
 
             {reports.length === 0 ? (
                 <EmptyState
-                    description="The Reports API did not return any reports for this page. Workflow queues will populate when reports are created and submitted."
+                    description="Your workflow queue is empty. Submitted reports will appear here when they need your attention."
                     icon={<FileCheck2 aria-hidden="true" className="size-10" />}
                     title="No workflow reports"
                 />
             ) : (
                 <>
                     <PendingApprovalsList
-                        description="Reports currently waiting for manager approval, final approval, or rejection."
-                        emptyDescription="There are no submitted or manager-approved reports on this API page."
+                        description="Reports currently waiting for manager review, final approval, or rejection."
+                        emptyDescription="There are no submitted or under-review reports in your queue."
                         onAction={requestWorkflowAction}
                         onOpen={openApproval}
                         pendingAction={pendingButtonAction}
                         pendingReportId={pendingReportId}
                         reports={pendingApprovals}
-                        title="Pending approvals list"
+                        title="Manager queue"
                         user={user}
                     />
 
                     <PendingApprovalsList
                         description="Reports where your current permissions and backend state allow an action."
-                        emptyDescription="No reports on this API page currently require your action."
+                        emptyDescription="No reports currently require your action."
                         onAction={requestWorkflowAction}
                         onOpen={openApproval}
                         pendingAction={pendingButtonAction}
@@ -164,20 +162,17 @@ export function WorkflowPage() {
                 </>
             )}
 
-            {meta && meta.last_page > 1 && (
-                <Pagination className="justify-center" onPageChange={setPage} page={meta.current_page} pageCount={meta.last_page} />
-            )}
-
             <WorkflowConfirmDialog
                 action={confirmAction?.action ?? null}
                 isPending={isPending}
-                onConfirm={() => {
+                onConfirm={(comment) => {
                     if (!confirmAction) {
                         return;
                     }
 
                     void runWorkflowAction({
                         action: confirmAction.action,
+                        comment,
                         onSuccess: () => setConfirmAction(null),
                         report: confirmAction.report,
                     });

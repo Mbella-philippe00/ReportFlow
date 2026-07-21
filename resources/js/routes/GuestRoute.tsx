@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 
-import { Spinner } from '@/components/ui';
+import { AppSplash } from '@/components/layout';
 import { useAuthStore } from '@/stores/auth.store';
 
 type RouteGuardProps = {
@@ -9,12 +9,7 @@ type RouteGuardProps = {
 };
 
 function RouteLoadingState() {
-    return (
-        <div className="grid gap-3 text-center text-sm text-muted-foreground">
-            <span className="mx-auto"><Spinner size="sm" /></span>
-            Restoring session?
-        </div>
-    );
+    return <AppSplash />;
 }
 
 export function GuestRoute({ children }: RouteGuardProps) {
@@ -26,7 +21,7 @@ export function GuestRoute({ children }: RouteGuardProps) {
     }
 
     if (isAuthenticated) {
-        return <Navigate replace to="/dashboard" />;
+        return <Navigate replace to='/dashboard' />;
     }
 
     return children ?? <Outlet />;

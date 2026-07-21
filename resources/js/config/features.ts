@@ -1,5 +1,5 @@
 ﻿export const featureFlags = Object.freeze({
-    ai: false,
+    ai: true,
     analytics: false,
     dashboard: true,
     employees: false,

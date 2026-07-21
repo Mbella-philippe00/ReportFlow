@@ -1,4 +1,4 @@
-﻿import { forwardRef, useId } from 'react';
+import { forwardRef, useId } from 'react';
 import type { SelectHTMLAttributes } from 'react';
 
 import { cn } from '@/utils/cn';
@@ -21,13 +21,13 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
     ({ children, className, error, helperText, id, label, options, placeholder, ...props }, ref) => {
         const generatedId = useId();
         const selectId = id ?? generatedId;
-        const descriptionId = `${selectId}-description`;
+        const descriptionId = selectId + '-description';
         const hasDescription = Boolean(error || helperText);
 
         return (
-            <div className="grid gap-2">
+            <div className='grid gap-2'>
                 {label && (
-                    <label className="text-sm font-medium text-foreground" htmlFor={selectId}>
+                    <label className='text-sm font-semibold text-foreground' htmlFor={selectId}>
                         {label}
                     </label>
                 )}
@@ -35,15 +35,15 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
                     aria-describedby={hasDescription ? descriptionId : undefined}
                     aria-invalid={Boolean(error)}
                     className={cn(
-                        'h-10 w-full rounded-xl border bg-surface px-3 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60',
-                        error && 'border-danger focus:ring-danger',
+                        'h-11 w-full rounded-2xl border border-border/80 bg-surface/95 px-3.5 text-sm text-foreground shadow-soft outline-none transition duration-200 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:bg-surface',
+                        error && 'border-danger focus:border-danger focus:ring-danger/20',
                         className,
                     )}
                     id={selectId}
                     ref={ref}
                     {...props}
                 >
-                    {placeholder && <option value="">{placeholder}</option>}
+                    {placeholder && <option value=''>{placeholder}</option>}
                     {options?.map((option) => (
                         <option disabled={option.disabled} key={option.value} value={option.value}>
                             {option.label}

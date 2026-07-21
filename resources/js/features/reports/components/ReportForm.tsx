@@ -6,7 +6,9 @@ import { useForm } from 'react-hook-form';
 import { reportFormSchema } from '@/features/reports/schemas/report.schema';
 import type { ReportFormValues } from '@/features/reports/schemas/report.schema';
 import { createReportPayload } from '@/features/reports/utils/report-utils';
+import { getErrorMessage, getValidationSummary } from '@/lib/errors';
 import { HttpError } from '@/lib/http';
+import { useToast } from '@/providers/ToastProvider';
 import { Alert, Button, Card, CardContent, CardHeader, CardTitle, Input, Textarea } from '@/components/ui';
 import type { ReportPayload } from '@/types';
 
@@ -30,6 +32,7 @@ const reportFieldLabels: Record<keyof ReportFormValues, string> = {
 };
 
 export function ReportForm({ defaultValues, disabled = false, onCancel, onSubmit, submitLabel }: ReportFormProps) {
+    const { notify } = useToast();
     const {
         formState: { errors, isSubmitting },
         handleSubmit,
@@ -59,11 +62,13 @@ export function ReportForm({ defaultValues, disabled = false, onCancel, onSubmit
                     }
                 });
 
+                notify({ description: getValidationSummary(error), intent: 'warning', title: 'Report needs changes' });
                 return;
             }
 
+            notify({ description: getErrorMessage(error, 'The report could not be saved.'), intent: 'error', title: 'Save failed' });
             setError('root', {
-                message: error instanceof Error ? error.message : 'The report could not be saved.',
+                message: getErrorMessage(error, 'The report could not be saved.'),
                 type: 'server',
             });
         }

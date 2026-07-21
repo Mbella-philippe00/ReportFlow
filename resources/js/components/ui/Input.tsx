@@ -21,18 +21,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         return (
             <div className="grid gap-2">
                 {label && (
-                    <label className="text-sm font-medium text-foreground" htmlFor={inputId}>
+                    <label className="text-sm font-semibold text-foreground" htmlFor={inputId}>
                         {label}
                     </label>
                 )}
                 <div className="relative">
-                    {leftIcon && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{leftIcon}</span>}
+                    {leftIcon && <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">{leftIcon}</span>}
                     <input
                         aria-describedby={hasDescription ? descriptionId : undefined}
                         aria-invalid={Boolean(error)}
                         className={cn(
-                            'h-10 w-full rounded-xl border bg-surface px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60',
-                            leftIcon && 'pl-10',
+                            'h-11 w-full rounded-2xl border border-border/80 bg-surface/95 px-3.5 text-sm text-foreground shadow-soft outline-none transition duration-200 placeholder:text-muted-foreground focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:bg-surface',
+                            leftIcon && 'pl-11',
                             rightIcon && 'pr-10',
                             error && 'border-danger focus:ring-danger',
                             className,

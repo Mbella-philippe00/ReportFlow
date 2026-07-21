@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
-import { Spinner } from '@/components/ui';
+import { AppSplash } from '@/components/layout';
 import { useAuthStore } from '@/stores/auth.store';
 
 type RouteGuardProps = {
@@ -9,14 +9,7 @@ type RouteGuardProps = {
 };
 
 function RouteLoadingState() {
-    return (
-        <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-            <div className="flex items-center gap-3 rounded-2xl border bg-surface px-4 py-3 text-sm text-muted-foreground shadow-soft">
-                <Spinner size="sm" />
-                Restoring session?
-            </div>
-        </div>
-    );
+    return <AppSplash />;
 }
 
 export function ProtectedRoute({ children }: RouteGuardProps) {
@@ -29,7 +22,7 @@ export function ProtectedRoute({ children }: RouteGuardProps) {
     }
 
     if (!isAuthenticated) {
-        return <Navigate replace state={{ from: location }} to="/login" />;
+        return <Navigate replace state={{ from: location }} to='/login' />;
     }
 
     return children ?? <Outlet />;

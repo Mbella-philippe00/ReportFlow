@@ -8,6 +8,7 @@ export * from './Dialog';
 export * from './Drawer';
 export * from './Dropdown';
 export * from './EmptyState';
+export * from './GlobalLoadingBar';
 export * from './IconButton';
 export * from './Input';
 export * from './LoadingOverlay';

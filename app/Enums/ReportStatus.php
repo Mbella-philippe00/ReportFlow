@@ -8,20 +8,20 @@ enum ReportStatus: string
 
     case SUBMITTED = 'submitted';
 
-    case MANAGER_APPROVED = 'manager_approved';
+    case UNDER_REVIEW = 'under_review';
 
-    case GENERATED = 'generated';
+    case APPROVED = 'approved';
 
     case REJECTED = 'rejected';
 
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Brouillon',
-            self::SUBMITTED => 'Soumis',
-            self::MANAGER_APPROVED => 'Pré-validé',
-            self::GENERATED => 'Validé',
-            self::REJECTED => 'Rejeté',
+            self::DRAFT => 'Draft',
+            self::SUBMITTED => 'Submitted',
+            self::UNDER_REVIEW => 'Under Review',
+            self::APPROVED => 'Approved',
+            self::REJECTED => 'Rejected',
         };
     }
 
@@ -30,9 +30,14 @@ enum ReportStatus: string
         return match ($this) {
             self::DRAFT => 'gray',
             self::SUBMITTED => 'warning',
-            self::MANAGER_APPROVED => 'info',
-            self::GENERATED => 'success',
+            self::UNDER_REVIEW => 'info',
+            self::APPROVED => 'success',
             self::REJECTED => 'danger',
         };
+    }
+
+    public function isTerminal(): bool
+    {
+        return in_array($this, [self::APPROVED, self::REJECTED], true);
     }
 }

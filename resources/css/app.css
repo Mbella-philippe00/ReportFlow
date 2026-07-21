@@ -1,4 +1,4 @@
-﻿@import 'tailwindcss';
+@import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -8,9 +8,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
-    --font-display: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Geist', 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
     --color-background: #f8fafc;
     --color-foreground: #0f172a;
@@ -20,25 +20,27 @@
     --color-primary-foreground: #ffffff;
     --color-secondary: #475569;
     --color-secondary-foreground: #ffffff;
-    --color-success: #16a34a;
-    --color-success-foreground: #ffffff;
-    --color-warning: #d97706;
-    --color-warning-foreground: #111827;
-    --color-danger: #dc2626;
-    --color-danger-foreground: #ffffff;
+    --color-success: #10b981;
+    --color-success-foreground: #ecfdf5;
+    --color-warning: #f59e0b;
+    --color-warning-foreground: #451a03;
+    --color-danger: #ef4444;
+    --color-danger-foreground: #fff1f2;
     --color-muted: #e2e8f0;
     --color-muted-foreground: #64748b;
-    --color-border: #cbd5e1;
+    --color-border: #dbeafe;
 
     --radius-xs: 0.25rem;
-    --radius-sm: 0.375rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --radius-xl: 1rem;
-    --radius-2xl: 1.25rem;
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-2xl: 1.5rem;
+    --radius-3xl: 2rem;
 
-    --shadow-soft: 0 18px 45px -24px rgb(15 23 42 / 0.35);
-    --shadow-elevated: 0 22px 60px -28px rgb(15 23 42 / 0.45);
+    --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px rgb(15 23 42 / 0.06);
+    --shadow-elevated: 0 12px 40px rgb(15 23 42 / 0.10), 0 2px 8px rgb(15 23 42 / 0.05);
+    --shadow-premium: 0 24px 80px rgb(15 23 42 / 0.14), 0 6px 24px rgb(37 99 235 / 0.10);
 
     --text-xs: 0.75rem;
     --text-sm: 0.875rem;
@@ -46,9 +48,10 @@
     --text-lg: 1.125rem;
     --text-xl: 1.25rem;
     --text-2xl: 1.5rem;
-    --text-3xl: 1.875rem;
+    --text-3xl: 2rem;
+    --text-4xl: 2.5rem;
 
-    --leading-tight: 1.25;
+    --leading-tight: 1.2;
     --leading-normal: 1.5;
     --leading-relaxed: 1.625;
 }
@@ -56,18 +59,19 @@
 @layer base {
     :root {
         color-scheme: light;
+        scroll-behavior: smooth;
     }
 
     .dark {
-        --color-background: #020617;
+        --color-background: #020817;
         --color-foreground: #e2e8f0;
         --color-surface: #0f172a;
         --color-surface-foreground: #f8fafc;
         --color-primary: #60a5fa;
-        --color-primary-foreground: #082f49;
+        --color-primary-foreground: #061529;
         --color-secondary: #94a3b8;
         --color-secondary-foreground: #0f172a;
-        --color-success: #4ade80;
+        --color-success: #34d399;
         --color-success-foreground: #052e16;
         --color-warning: #fbbf24;
         --color-warning-foreground: #451a03;
@@ -75,12 +79,17 @@
         --color-danger-foreground: #450a0a;
         --color-muted: #1e293b;
         --color-muted-foreground: #94a3b8;
-        --color-border: #334155;
+        --color-border: #1e3a8a;
         color-scheme: dark;
     }
 
     * {
         border-color: var(--color-border);
+    }
+
+    *:focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--color-primary) 70%, white);
+        outline-offset: 3px;
     }
 
     html {
@@ -91,8 +100,29 @@
     body {
         min-height: 100vh;
         margin: 0;
-        background: var(--color-background);
+        background:
+            radial-gradient(circle at top left, rgb(219 234 254 / 0.65), transparent 32rem),
+            linear-gradient(180deg, #ffffff 0%, var(--color-background) 38%, #f1f5f9 100%);
         color: var(--color-foreground);
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .dark body {
+        background:
+            radial-gradient(circle at top left, rgb(37 99 235 / 0.18), transparent 34rem),
+            linear-gradient(180deg, #020817 0%, #071124 52%, #020817 100%);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-display);
+        letter-spacing: -0.025em;
     }
 
     button,
@@ -101,5 +131,57 @@
     select {
         font: inherit;
     }
+
+    ::selection {
+        background: rgb(37 99 235 / 0.18);
+        color: var(--color-foreground);
+    }
+
+    ::-webkit-scrollbar {
+        height: 10px;
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgb(148 163 184 / 0.45);
+        border: 3px solid transparent;
+        border-radius: 999px;
+        background-clip: content-box;
+    }
 }
 
+@layer utilities {
+    .animate-premium-fade {
+        animation: premium-fade 180ms ease-out both;
+    }
+
+    .animate-premium-slide-up {
+        animation: premium-slide-up 220ms ease-out both;
+    }
+
+    .glass-surface {
+        background: color-mix(in srgb, var(--color-surface) 86%, transparent);
+        backdrop-filter: blur(18px);
+    }
+}
+
+@keyframes premium-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes premium-slide-up {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+    }
+}

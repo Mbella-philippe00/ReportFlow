@@ -8,26 +8,21 @@ class UpdateWeeklyReportRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $report = $this->route('report');
+
+        return $report !== null && ($this->user()?->can('update', $report) ?? false);
     }
 
     public function rules(): array
     {
         return [
             'employee_id' => ['sometimes', 'exists:employees,id'],
-
             'department' => ['sometimes', 'string', 'max:255'],
-
             'week' => ['sometimes', 'string', 'max:20'],
-
             'objectives' => ['sometimes', 'string'],
-
             'activities' => ['sometimes', 'string'],
-
             'achievements' => ['sometimes', 'string'],
-
             'difficulties' => ['nullable', 'string'],
-
             'next_actions' => ['sometimes', 'string'],
         ];
     }

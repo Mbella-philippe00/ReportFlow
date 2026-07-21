@@ -46,29 +46,29 @@ import { dashboardQueryKeys, getDashboard } from '@/services/dashboard.service';
 import { listReports, reportsQueryKeys } from '@/services/reports.service';
 import type { DashboardCharts, DashboardData, DashboardStatistics, ReportStatusValue, WeeklyReport } from '@/types';
 
-const reportStatusValues = ['draft', 'submitted', 'manager_approved', 'generated', 'rejected'] as const;
+const reportStatusValues = ['draft', 'submitted', 'under_review', 'approved', 'rejected'] as const;
 const reportStatusOrder: readonly string[] = reportStatusValues;
 
 const reportStatusLabels: Record<string, string> = {
     draft: 'Draft',
-    generated: 'Generated',
-    manager_approved: 'Manager approved',
+    approved: 'Approved',
+    under_review: 'Under Review',
     rejected: 'Rejected',
     submitted: 'Submitted',
 };
 
 const statusBarClasses: Record<string, string> = {
     draft: 'bg-muted-foreground',
-    generated: 'bg-primary',
-    manager_approved: 'bg-success',
+    approved: 'bg-success',
+    under_review: 'bg-primary',
     rejected: 'bg-danger',
     submitted: 'bg-warning',
 };
 
 const statusMetricIntent: Record<string, 'danger' | 'neutral' | 'primary' | 'success' | 'warning'> = {
     draft: 'neutral',
-    generated: 'primary',
-    manager_approved: 'success',
+    approved: 'success',
+    under_review: 'primary',
     rejected: 'danger',
     submitted: 'warning',
 };
@@ -161,8 +161,8 @@ const getReportDescription = (report: WeeklyReport) =>
 const getReportProgress = (status: ReportStatusValue) => {
     const progressByStatus: Record<ReportStatusValue, number> = {
         draft: 20,
-        generated: 100,
-        manager_approved: 80,
+        approved: 100,
+        under_review: 75,
         rejected: 100,
         submitted: 55,
     };
@@ -272,10 +272,10 @@ function KpiSection({ loading, statistics }: { loading: boolean; statistics?: Da
                 value={formatNumber(statistics.pending_reports)}
             />
             <StatCard
-                description="Reports with generated PowerPoint output."
+                description="Reports approved and locked read-only."
                 icon={<CheckCircle2 aria-hidden="true" className="size-5" />}
-                title="Generated reports"
-                value={formatNumber(statistics.generated_reports)}
+                title="Approved reports"
+                value={formatNumber(statistics.approved_reports ?? statistics.generated_reports)}
             />
             <StatCard
                 description="Reports rejected during workflow review."
@@ -284,7 +284,7 @@ function KpiSection({ loading, statistics }: { loading: boolean; statistics?: Da
                 value={formatNumber(statistics.rejected_reports)}
             />
             <StatCard
-                description="Generated reports compared with total reports."
+                description="Approved reports compared with total reports."
                 icon={<TrendingUp aria-hidden="true" className="size-5" />}
                 title="Validation rate"
                 value={formatPercent(statistics.validation_rate)}
@@ -320,7 +320,7 @@ function OperationalMetrics({ charts, loading, statistics }: { charts?: Dashboar
             </CardHeader>
             <CardContent className="grid gap-4">
                 <KPIWidget
-                    description="Ratio of generated reports to all weekly reports."
+                    description="Ratio of approved reports to all weekly reports."
                     progress={statistics.validation_rate}
                     title="Validation rate"
                     value={formatPercent(statistics.validation_rate)}
@@ -557,9 +557,9 @@ function QuickActionsSection() {
             </CardHeader>
             <CardContent className="grid gap-3">
                 {actions.map((action) => (
-                    <div className="rounded-2xl border bg-background p-3" key={action.to}>
+                    <div className="rounded-3xl border border-border/70 bg-white/70 p-4 shadow-soft transition hover:-translate-y-0.5 hover:shadow-elevated dark:bg-surface/70" key={action.to}>
                         <div className="flex items-start gap-3">
-                            <span className="rounded-xl bg-muted p-2 text-muted-foreground">{action.icon}</span>
+                            <span className="rounded-2xl bg-primary/10 p-2.5 text-primary">{action.icon}</span>
                             <div className="min-w-0 flex-1">
                                 <p className="text-sm font-medium text-foreground">{action.label}</p>
                                 <p className="mt-1 text-sm text-muted-foreground">{action.description}</p>
@@ -628,8 +628,8 @@ export function DashboardPage() {
                     </Button>
                 </div>
             }
-            description="Live overview of the weekly reporting workflow, approvals, and report generation progress."
-            eyebrow="ReportFlow"
+            description="A calm executive overview of weekly reporting, workflow approvals, documents, and operational momentum."
+            eyebrow="Executive workspace"
             title="Dashboard"
         >
             <div className="grid gap-6">

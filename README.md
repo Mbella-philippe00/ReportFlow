@@ -1,83 +1,102 @@
 # ReportFlow
 
-ReportFlow is an enterprise SaaS application for weekly reporting workflows, approvals, AI-assisted summaries, PowerPoint generation, activity logs, and role-based access control.
+ReportFlow is an enterprise weekly reporting platform that turns employee updates into reviewed decisions, executive KPIs, searchable documents, and AI-assisted insights.
 
-The backend is Laravel/Sanctum and the frontend is a React + TypeScript SPA served by Laravel through Vite.
+## Version
 
-## Official Local Development URL
+Current release: `1.0.0`
 
-Use this URL for all local development, browser verification, screenshots, and manual QA:
+## Core Capabilities
 
-```text
-http://localhost:8081
-```
+- Authentication and Sanctum API access.
+- Role and policy-based authorization.
+- Weekly report workflow: Draft, Submitted, Under Review, Approved, Rejected.
+- Manager queues, comments, timelines, read-only approved reports, notifications, and activity logs.
+- Document management with attachments, version history, previews, metadata, threaded comments, and mentions.
+- AI assistant with OpenAI/Gemini provider resolution and fallback behavior.
+- Analytics, KPI center, executive dashboard, exports, comparisons, and smart alerts.
+- Enterprise administration for company settings, departments, teams, positions, calendars, workflow configuration, notification settings, AI settings, feature flags, and audits.
+- Premium responsive React UI with route-level lazy loading.
 
-Do not use `http://localhost` as the ReportFlow application URL. Port `80` may be used by another local project or container on the developer machine.
+## Technology
 
-## Local Environment
+- Laravel 13, PHP 8.3, Sanctum, Eloquent, Policies, Notifications, Spatie Activity Log.
+- React 19, TypeScript, Vite, React Query, React Router, Tailwind CSS.
+- MySQL, Redis-ready cache/session/queue configuration, local or object storage for documents.
+- Production Docker image with Nginx, PHP-FPM, Supervisor, and opcache.
 
-The local Docker/Sail mapping is configured through `APP_PORT`:
-
-```env
-APP_URL=http://localhost:8081
-APP_PORT=8081
-VITE_APP_NAME=ReportFlow
-VITE_API_BASE_URL=/api
-VITE_ROUTER_BASENAME=/
-```
-
-The React SPA is mounted by Laravel from `resources/views/welcome.blade.php` and loaded through `resources/js/main.tsx`.
-
-## Development Commands
-
-Start the local stack:
+## Local Development
 
 ```bash
 docker compose up -d
-```
-
-Run Vite inside the Laravel/Sail container:
-
-```bash
+docker compose exec laravel.test composer install
+docker compose exec laravel.test npm install
+docker compose exec laravel.test cp .env.example .env
+docker compose exec laravel.test php artisan key:generate
+docker compose exec laravel.test php artisan migrate --seed
 docker compose exec laravel.test npm run dev
 ```
 
-Run frontend checks:
+Local app URL:
+
+```text
+http://localhost:8081
+```
+
+## Validation
 
 ```bash
-docker compose exec laravel.test npm run typecheck
+docker compose exec laravel.test php artisan test
 docker compose exec laravel.test npm run build
 ```
 
-Clear Laravel caches after environment or route changes:
+Production cache smoke check:
 
 ```bash
+docker compose exec laravel.test php artisan config:cache
+docker compose exec laravel.test php artisan route:cache
+docker compose exec laravel.test php artisan view:cache
+docker compose exec laravel.test php artisan event:cache
 docker compose exec laravel.test php artisan optimize:clear
 ```
 
-## Verification URLs
+## Production Deployment
 
-Use these URLs when verifying the app:
-
-```text
-http://localhost:8081
-http://localhost:8081/dashboard
-http://localhost:8081/login
-http://localhost:8081/api/dashboard
+```bash
+cp .env.production.example .env.production
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml exec app php artisan migrate --force
 ```
 
-Expected API behavior:
+Health endpoints:
 
-- `GET http://localhost:8081/api/dashboard` returns `401` without a Sanctum Bearer token.
-- Authenticated Dashboard requests are made against same-origin `/api` endpoints.
-- BrowserRouter routes such as `/dashboard` must be opened through `http://localhost:8081/dashboard`.
+- `/live`
+- `/ready`
+- `/health`
+- `/version`
 
-## Screenshot Rule
+## Documentation
 
-All desktop, tablet, mobile, dark mode, and light mode screenshots must use:
+- `docs/Architecture.md`
+- `docs/Installation.md`
+- `docs/Deployment.md`
+- `docs/API.md`
+- `docs/AdministratorGuide.md`
+- `docs/UserGuide.md`
+- `docs/Backup.md`
+- `docs/ReleaseNotes.md`
+- `docs/Troubleshooting.md`
+- `docs/ProductionReadinessReport.md`
 
-```text
-http://localhost:8081
-```
+## Security Notes
 
-Do not capture ReportFlow screenshots from `http://localhost` unless `APP_PORT=80` has been explicitly approved for that session.
+- Keep `APP_DEBUG=false` in production.
+- Use HTTPS with `SESSION_SECURE_COOKIE=true`.
+- Configure `REPORTFLOW_FORCE_HSTS=true` only behind TLS.
+- Review `REPORTFLOW_UPLOAD_EXTENSIONS` and `REPORTFLOW_UPLOAD_MAX_KB` before launch.
+- Configure both `OPENAI_API_KEY` and `GEMINI_API_KEY` when possible for AI fallback.
+
+## License
+
+ReportFlow is released under the MIT License. See `LICENSE`.

@@ -19,7 +19,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         return (
             <div className="grid gap-2">
                 {label && (
-                    <label className="text-sm font-medium text-foreground" htmlFor={textareaId}>
+                    <label className="text-sm font-semibold text-foreground" htmlFor={textareaId}>
                         {label}
                     </label>
                 )}
@@ -27,7 +27,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                     aria-describedby={hasDescription ? descriptionId : undefined}
                     aria-invalid={Boolean(error)}
                     className={cn(
-                        'min-h-28 w-full resize-y rounded-xl border bg-surface px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:ring-2 focus:ring-primary disabled:cursor-not-allowed disabled:opacity-60',
+                        'min-h-32 w-full resize-y rounded-2xl border border-border/80 bg-surface/95 px-3.5 py-3 text-sm text-foreground shadow-soft outline-none transition duration-200 placeholder:text-muted-foreground focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:bg-surface',
                         error && 'border-danger focus:ring-danger',
                         className,
                     )}

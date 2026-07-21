@@ -6,7 +6,9 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#2563eb">
         <meta name="color-scheme" content="light dark">
-        <meta name="description" content="Enterprise weekly reporting workflow platform">
+        <meta name="description" content="Premium enterprise weekly reporting, workflow, analytics, documents, and AI platform">
+        <link rel="icon" type="image/png" href="/favicon.png">
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
         <link rel="manifest" href="/manifest.webmanifest">
 
         <title>{{ config('app.name', 'ReportFlow') }}</title>

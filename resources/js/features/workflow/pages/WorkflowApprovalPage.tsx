@@ -174,17 +174,25 @@ export function WorkflowApprovalPage() {
                                     <dd className="mt-1 font-medium text-foreground">{formatReportDate(report.submitted_at)}</dd>
                                 </div>
                                 <div className="rounded-xl bg-muted/60 p-3">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validated by</dt>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Manager reviewer</dt>
                                     <dd className="mt-1 font-medium text-foreground">{report.validator ?? 'Not available'}</dd>
                                 </div>
                                 <div className="rounded-xl bg-muted/60 p-3">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Validated at</dt>
-                                    <dd className="mt-1 font-medium text-foreground">{formatReportDate(report.validated_at)}</dd>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Under review</dt>
+                                    <dd className="mt-1 font-medium text-foreground">{formatReportDate(report.under_review_at ?? report.validated_at)}</dd>
                                 </div>
                                 <div className="rounded-xl bg-muted/60 p-3">
-                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Generated</dt>
-                                    <dd className="mt-1 font-medium text-foreground">{formatReportDate(report.generated_at)}</dd>
+                                    <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Approved</dt>
+                                    <dd className="mt-1 font-medium text-foreground">{formatReportDate(report.approved_at ?? report.generated_at)}</dd>
+                                    <dd className="mt-1 text-xs text-muted-foreground">{report.approver ? `By ${report.approver}` : 'Final approver not available'}</dd>
                                 </div>
+
+                                {report.manager_comment && (
+                                    <div className="rounded-xl bg-muted/60 p-3">
+                                        <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Manager comment</dt>
+                                        <dd className="mt-1 text-sm leading-relaxed text-foreground">{report.manager_comment}</dd>
+                                    </div>
+                                )}
                                 {report.rejected_at && (
                                     <div className="rounded-xl bg-danger/10 p-3 text-danger">
                                         <dt className="text-xs font-medium uppercase tracking-wide">Rejected by {report.rejector ?? 'Reviewer'}</dt>
@@ -201,13 +209,14 @@ export function WorkflowApprovalPage() {
             <WorkflowConfirmDialog
                 action={confirmAction?.action ?? null}
                 isPending={isPending}
-                onConfirm={() => {
+                onConfirm={(comment) => {
                     if (!confirmAction) {
                         return;
                     }
 
                     void runWorkflowAction({
                         action: confirmAction.action,
+                        comment,
                         onSuccess: () => setConfirmAction(null),
                         report: confirmAction.report,
                     });

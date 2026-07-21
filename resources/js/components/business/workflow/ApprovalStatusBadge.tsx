@@ -1,4 +1,4 @@
-﻿import { Badge } from '@/components/ui';
+import { Badge } from '@/components/ui';
 
 export type ApprovalStatus = 'approved' | 'current' | 'pending' | 'rejected' | 'skipped';
 
@@ -17,6 +17,7 @@ const approvalStatusConfig: Record<ApprovalStatus, { intent: 'danger' | 'neutral
 
 export function ApprovalStatusBadge({ label, status }: ApprovalStatusBadgeProps) {
     const config = approvalStatusConfig[status];
+    const resolvedLabel = label ?? config.label;
 
-    return <Badge intent={config.intent}>{label ?? config.label}</Badge>;
+    return <Badge aria-label={`Workflow status: ${resolvedLabel}`} intent={config.intent}>{resolvedLabel}</Badge>;
 }

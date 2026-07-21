@@ -15,7 +15,7 @@ class ReportsStats extends StatsOverviewWidget
 
         $submitted = WeeklyReport::where('status', ReportStatus::SUBMITTED)->count();
 
-        $generated = WeeklyReport::where('status', ReportStatus::GENERATED)->count();
+        $generated = WeeklyReport::where('status', ReportStatus::APPROVED)->count();
 
         $rejected = WeeklyReport::where('status', ReportStatus::REJECTED)->count();
 

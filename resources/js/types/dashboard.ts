@@ -1,10 +1,16 @@
 ﻿import type { WeeklyReport } from '@/types/report';
 
 export type DashboardStatistics = {
+    approved_reports: number;
+    draft_reports?: number;
+    final_approval_queue?: number;
     generated_reports: number;
+    manager_queue?: number;
     pending_reports: number;
     rejected_reports: number;
+    submitted_reports?: number;
     total_reports: number;
+    under_review_reports?: number;
     validation_rate: number;
 };
 

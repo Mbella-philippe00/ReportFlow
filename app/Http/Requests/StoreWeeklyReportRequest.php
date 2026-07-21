@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Models\WeeklyReport;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreWeeklyReportRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return $this->user()?->can('create', WeeklyReport::class) ?? false;
     }
 
     public function rules(): array

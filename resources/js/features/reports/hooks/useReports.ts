@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { dashboardQueryKeys } from '@/services/dashboard.service';
+import { analyticsQueryKeys } from '@/services/analytics.service';
 import {
     createReport,
     deleteReport,
@@ -51,6 +53,8 @@ export const useCreateReportMutation = () => {
         onSuccess: (response) => {
             queryClient.setQueryData(reportsQueryKeys.detail(response.data.id), response);
             void queryClient.invalidateQueries({ queryKey: reportsQueryKeys.lists() });
+            void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.detail() });
+            void queryClient.invalidateQueries({ queryKey: analyticsQueryKeys.all });
         },
     });
 };
@@ -62,6 +66,8 @@ export const useUpdateReportMutation = () => {
         mutationFn: ({ id, payload }: { id: number; payload: Partial<ReportPayload> }) => updateReport({ id, payload }),
         onSuccess: (response) => {
             updateReportCaches(queryClient, response.data);
+            void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.detail() });
+            void queryClient.invalidateQueries({ queryKey: analyticsQueryKeys.all });
         },
     });
 };
@@ -100,6 +106,8 @@ export const useDeleteReportMutation = () => {
         },
         onSettled: () => {
             void queryClient.invalidateQueries({ queryKey: reportsQueryKeys.all });
+            void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.detail() });
+            void queryClient.invalidateQueries({ queryKey: analyticsQueryKeys.all });
         },
     });
 };
@@ -112,6 +120,8 @@ export const useSubmitReportMutation = () => {
         onSuccess: (response) => {
             updateReportCaches(queryClient, response.data);
             void queryClient.invalidateQueries({ queryKey: reportsQueryKeys.all });
+            void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.detail() });
+            void queryClient.invalidateQueries({ queryKey: analyticsQueryKeys.all });
         },
     });
 };

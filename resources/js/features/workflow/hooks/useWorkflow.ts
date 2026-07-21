@@ -1,11 +1,15 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { QueryClient } from '@tanstack/react-query';
 
-import { approveReport, finalApproveReport, rejectReport, reportsQueryKeys, submitReport } from '@/services/reports.service';
+import { analyticsQueryKeys } from '@/services/analytics.service';
+import { dashboardQueryKeys } from '@/services/dashboard.service';
+import { notificationsQueryKeys } from '@/services/notifications.service';
+import { approveReport, finalApproveReport, listWorkflowQueue, rejectReport, reportsQueryKeys, submitReport } from '@/services/reports.service';
 import type { ApiSuccessResponse, PaginatedApiResponse, ReportWorkflowAction, WeeklyReport } from '@/types';
 
 export type WorkflowActionInput = {
     action: ReportWorkflowAction;
+    comment?: string;
     id: number;
     reason?: string;
 };
@@ -28,13 +32,13 @@ const updateWorkflowReportCaches = (queryClient: QueryClient, report: WeeklyRepo
     });
 };
 
-const executeWorkflowAction = ({ action, id, reason }: WorkflowActionInput) => {
+const executeWorkflowAction = ({ action, comment, id, reason }: WorkflowActionInput) => {
     if (action === 'submit') {
         return submitReport({ id });
     }
 
     if (action === 'approve') {
-        return approveReport({ id });
+        return approveReport({ comment, id });
     }
 
     if (action === 'final-approve') {
@@ -44,6 +48,12 @@ const executeWorkflowAction = ({ action, id, reason }: WorkflowActionInput) => {
     return rejectReport({ id, reason: reason ?? '' });
 };
 
+export const useWorkflowQueueQuery = () =>
+    useQuery({
+        queryFn: ({ signal }) => listWorkflowQueue({ signal }),
+        queryKey: reportsQueryKeys.workflowQueue(),
+    });
+
 export const useWorkflowActionMutation = () => {
     const queryClient = useQueryClient();
 
@@ -52,6 +62,10 @@ export const useWorkflowActionMutation = () => {
         onSuccess: (response) => {
             updateWorkflowReportCaches(queryClient, response.data);
             void queryClient.invalidateQueries({ queryKey: reportsQueryKeys.all });
+            void queryClient.invalidateQueries({ queryKey: reportsQueryKeys.workflowQueue() });
+            void queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.detail() });
+            void queryClient.invalidateQueries({ queryKey: analyticsQueryKeys.all });
+            void queryClient.invalidateQueries({ queryKey: notificationsQueryKeys.all });
         },
     });
 };

@@ -65,7 +65,7 @@ export function RejectionDialog({ isPending = false, onConfirm, onOpenChange, op
         >
             <div className="grid gap-4">
                 <Alert
-                    description="The backend requires a rejection reason before moving a submitted or manager-approved report to rejected."
+                    description="The backend requires a rejection reason before moving a submitted or under-review report to rejected."
                     icon={<AlertTriangle aria-hidden="true" className="size-5" />}
                     intent="warning"
                     title="Reason required"

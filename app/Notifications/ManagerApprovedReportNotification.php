@@ -3,8 +3,6 @@
 namespace App\Notifications;
 
 use App\Models\WeeklyReport;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -25,22 +23,22 @@ class ManagerApprovedReportNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Rapport pré-validé')
-            ->greeting('Bonjour')
-            ->line("Le rapport {$this->report->week} a été pré-validé par un manager.")
-            ->line('Une validation finale est requise.');
+            ->subject('Report under review')
+            ->greeting('Hello')
+            ->line("The {$this->report->week} weekly report was moved under review by a manager.")
+            ->line('Final approval is required.');
     }
 
     public function toDatabase(object $notifiable): array
     {
-        return FilamentNotification::make()
-            ->title('Rapport pré-validé')
-            ->body("Le rapport {$this->report->week} a été pré-validé par un manager.")
-            ->actions([
-                Action::make('view')
-                    ->label('Voir le rapport')
-                    ->url("/admin/weekly-reports/{$this->report->id}/edit"),
-            ])
-            ->getDatabaseMessage();
+        return [
+            'type' => 'workflow',
+            'title' => 'Report under review',
+            'message' => "The {$this->report->week} weekly report was moved under review by a manager.",
+            'report_id' => $this->report->id,
+            'employee_id' => $this->report->employee_id,
+            'manager_comment' => $this->report->manager_comment,
+            'action_url' => "/workflow/approvals/{$this->report->id}",
+        ];
     }
 }

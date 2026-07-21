@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { Alert, Button, Input, Modal, Switch } from '@/components/ui';
+import { getErrorMessage, getValidationSummary } from '@/lib/errors';
 import { HttpError } from '@/lib/http';
+import { useToast } from '@/providers/ToastProvider';
 import type { Employee, EmployeePayload } from '@/types';
 import { employeeFormSchema } from '../schemas/employee.schema';
 import type { EmployeeFormValues } from '../schemas/employee.schema';
@@ -28,6 +30,7 @@ const fieldLabels: Record<keyof EmployeeFormValues, string> = {
 };
 
 export function EmployeeFormDialog({ employee = null, isPending = false, onOpenChange, onSubmit, open }: EmployeeFormDialogProps) {
+    const { notify } = useToast();
     const {
         formState: { errors, isSubmitting },
         handleSubmit,
@@ -60,11 +63,13 @@ export function EmployeeFormDialog({ employee = null, isPending = false, onOpenC
                     }
                 });
 
+                notify({ description: getValidationSummary(error), intent: 'warning', title: 'Employee needs changes' });
                 return;
             }
 
+            notify({ description: getErrorMessage(error, 'The employee could not be saved.'), intent: 'error', title: 'Save failed' });
             setError('root', {
-                message: error instanceof Error ? error.message : 'The employee could not be saved.',
+                message: getErrorMessage(error, 'The employee could not be saved.'),
                 type: 'server',
             });
         }

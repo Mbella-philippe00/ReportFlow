@@ -1,6 +1,10 @@
+export type * from './ai';
+export type * from './analytics';
+export type * from './administration';
 export type * from './api';
 export type * from './auth';
 export type * from './dashboard';
+export type * from './document';
 export type * from './employee';
 export type * from './notification';
 export type * from './report';

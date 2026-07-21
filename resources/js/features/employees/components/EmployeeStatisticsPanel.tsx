@@ -7,8 +7,8 @@ import { formatEmployeeDate } from '../utils/employee-utils';
 const metricCards = [
     { key: 'total_reports', label: 'Total reports', icon: FileText },
     { key: 'submitted_reports', label: 'Submitted', icon: Clock3 },
-    { key: 'manager_approved_reports', label: 'Manager approved', icon: ShieldCheck },
-    { key: 'generated_reports', label: 'Final approved', icon: CheckCircle2 },
+    { key: 'manager_approved_reports', label: 'Under review', icon: ShieldCheck },
+    { key: 'generated_reports', label: 'Approved', icon: CheckCircle2 },
     { key: 'rejected_reports', label: 'Rejected', icon: XCircle },
 ] as const;
 

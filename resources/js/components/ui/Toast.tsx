@@ -24,7 +24,7 @@ export type ToastProps = {
 
 export function Toast({ action, className, description, intent = 'info', onClose, title }: ToastProps) {
     return (
-        <div className={cn('flex w-full max-w-sm items-start gap-3 rounded-2xl border bg-surface p-4 text-sm text-surface-foreground shadow-elevated', toastIntentClasses[intent], className)} role="status">
+        <div className={cn('flex w-full max-w-sm items-start gap-3 rounded-2xl border bg-surface p-4 text-sm text-surface-foreground shadow-elevated', toastIntentClasses[intent], className)} role={intent === 'danger' ? 'alert' : 'status'}>
             <div className="min-w-0 flex-1">
                 <p className="font-semibold">{title}</p>
                 {description && <div className="mt-1 text-muted-foreground">{description}</div>}

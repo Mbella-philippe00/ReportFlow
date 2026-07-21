@@ -243,8 +243,8 @@ class EmployeeController extends Controller
             'total_reports' => $employee->weeklyReports()->count(),
             'draft_reports' => $employee->weeklyReports()->where('status', ReportStatus::DRAFT)->count(),
             'submitted_reports' => $employee->weeklyReports()->where('status', ReportStatus::SUBMITTED)->count(),
-            'manager_approved_reports' => $employee->weeklyReports()->where('status', ReportStatus::MANAGER_APPROVED)->count(),
-            'generated_reports' => $employee->weeklyReports()->where('status', ReportStatus::GENERATED)->count(),
+            'manager_approved_reports' => $employee->weeklyReports()->where('status', ReportStatus::UNDER_REVIEW)->count(),
+            'generated_reports' => $employee->weeklyReports()->where('status', ReportStatus::APPROVED)->count(),
             'rejected_reports' => $employee->weeklyReports()->where('status', ReportStatus::REJECTED)->count(),
             'last_report_at' => $employee->weeklyReports()->latest()->value('created_at'),
         ];

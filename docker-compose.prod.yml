@@ -1,0 +1,90 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: app
+    image: reportflow/app:1.0.0
+    env_file:
+      - .env.production
+    environment:
+      REPORTFLOW_OPTIMIZE: "true"
+      REPORTFLOW_RUN_MIGRATIONS: "${REPORTFLOW_RUN_MIGRATIONS:-false}"
+    volumes:
+      - reportflow-storage:/var/www/html/storage
+      - reportflow-bootstrap-cache:/var/www/html/bootstrap/cache
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "php artisan about --only=environment >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  queue:
+    image: reportflow/app:1.0.0
+    env_file:
+      - .env.production
+    command: ["supervisord", "-c", "/etc/supervisor/conf.d/reportflow.conf"]
+    volumes:
+      - reportflow-storage:/var/www/html/storage
+      - reportflow-bootstrap-cache:/var/www/html/bootstrap/cache
+    depends_on:
+      app:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: nginx
+    image: reportflow/nginx:1.0.0
+    ports:
+      - "${HTTP_PORT:-80}:80"
+    volumes:
+      - reportflow-storage:/var/www/html/storage:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/live >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: "${DB_DATABASE:-reportflow}"
+      MYSQL_USER: "${DB_USERNAME:-reportflow}"
+      MYSQL_PASSWORD: "${DB_PASSWORD:-change-me}"
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD:-change-me-root}"
+    volumes:
+      - reportflow-mysql:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - reportflow-redis:/data
+    restart: unless-stopped
+
+volumes:
+  reportflow-bootstrap-cache:
+  reportflow-mysql:
+  reportflow-redis:
+  reportflow-storage:

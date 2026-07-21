@@ -23,19 +23,22 @@ class FinalReportApprovedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Rapport validé')
-            ->greeting('Bonjour')
-            ->line("Votre rapport {$this->report->week} a été validé définitivement.")
-            ->line('Le fichier PowerPoint est désormais disponible.')
+            ->subject('Report approved')
+            ->greeting('Hello')
+            ->line("Your weekly report {$this->report->week} was approved.")
+            ->line('The PowerPoint file is available when generated.')
             ->success();
     }
 
     public function toDatabase(object $notifiable): array
     {
         return [
-            'title' => 'Rapport validé',
-            'message' => "Votre rapport {$this->report->week} a été validé définitivement.",
+            'type' => 'workflow',
+            'title' => 'Report approved',
+            'message' => "Your {$this->report->week} weekly report was approved.",
             'report_id' => $this->report->id,
+            'employee_id' => $this->report->employee_id,
+            'action_url' => "/reports/{$this->report->id}",
         ];
     }
 }

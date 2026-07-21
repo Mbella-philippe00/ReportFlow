@@ -2,6 +2,7 @@ import { AlertCircle, FileText } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { PageContainer } from '@/components/layout/PageContainer';
+import { AiReportActionPanel } from '@/features/ai/components';
 import { Alert, EmptyState, Skeleton } from '@/components/ui';
 import { useToast } from '@/providers/ToastProvider';
 import { useAuthStore } from '@/stores/auth.store';
@@ -84,17 +85,24 @@ export function ReportEditPage() {
 
     return (
         <PageContainer description={`${report.department} · ${report.week} · ${getEmployeeName(report)}`} eyebrow="Reports" title={`Edit ${getReportTitle(report)}`}>
-            <ReportForm
-                defaultValues={getReportFormDefaults(report)}
-                disabled={updateReport.isPending}
-                onCancel={() => navigate(`/reports/${report.id}`)}
-                onSubmit={async (payload) => {
-                    await updateReport.mutateAsync({ id: report.id, payload });
-                    notify({ intent: 'success', title: 'Report updated', description: 'The report was saved successfully.' });
-                    navigate(`/reports/${report.id}`);
-                }}
-                submitLabel="Save report"
-            />
+            <div className="grid gap-6">
+                <ReportForm
+                    defaultValues={getReportFormDefaults(report)}
+                    disabled={updateReport.isPending}
+                    onCancel={() => navigate(`/reports/${report.id}`)}
+                    onSubmit={async (payload) => {
+                        await updateReport.mutateAsync({ id: report.id, payload });
+                        notify({ intent: 'success', title: 'Report updated', description: 'The report was saved successfully.' });
+                        navigate(`/reports/${report.id}`);
+                    }}
+                    submitLabel="Save report"
+                />
+                <AiReportActionPanel
+                    report={report}
+                    title="AI Report Assistant"
+                    description="Generate suggestions while editing. Apply any useful result manually before saving the report."
+                />
+            </div>
         </PageContainer>
     );
 }

@@ -13,6 +13,7 @@ export type PendingWorkflowAction = {
 
 export type RunWorkflowActionInput = {
     action: ReportWorkflowAction;
+    comment?: string;
     onSuccess?: (report: WeeklyReport) => void;
     reason?: string;
     report: WeeklyReport;
@@ -25,12 +26,12 @@ export const useWorkflowActionRunner = () => {
     const workflowAction = useWorkflowActionMutation();
     const [pendingAction, setPendingAction] = useState<PendingWorkflowAction>(null);
 
-    const runWorkflowAction = async ({ action, onSuccess, reason, report }: RunWorkflowActionInput) => {
+    const runWorkflowAction = async ({ action, comment, onSuccess, reason, report }: RunWorkflowActionInput) => {
         const copy = getWorkflowActionCopy(action, report);
         setPendingAction({ action, reportId: report.id });
 
         try {
-            const response = await workflowAction.mutateAsync({ action, id: report.id, reason });
+            const response = await workflowAction.mutateAsync({ action, comment, id: report.id, reason });
 
             notify({
                 description: copy.successDescription,

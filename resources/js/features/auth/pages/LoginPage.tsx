@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, LogIn } from 'lucide-react';
+import { AlertCircle, ArrowRight, Mail, ShieldCheck } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { Alert, Button, Input } from '@/components/ui';
 import { appConfig } from '@/config/app';
@@ -22,7 +22,7 @@ const getRedirectPath = (state: unknown) => {
     const locationState = state as LoginLocationState | null;
     const pathname = locationState?.from?.pathname;
 
-    return pathname && pathname !== '/login' ? pathname : '/dashboard';
+    return pathname ? (pathname !== '/login' ? pathname : '/dashboard') : '/dashboard';
 };
 
 export function LoginPage() {
@@ -44,7 +44,7 @@ export function LoginPage() {
     });
 
     useEffect(() => {
-        document.title = `Sign in - ${appConfig.name}`;
+        document.title = 'Sign in - ' + appConfig.name;
     }, []);
 
     const submitForm = handleSubmit(async (values) => {
@@ -72,26 +72,44 @@ export function LoginPage() {
         }
     });
 
-    const isPending = isSubmitting || loginMutation.isPending;
+    const isPending = isSubmitting ? true : loginMutation.isPending;
 
     return (
         <div>
-            <p className="text-sm font-medium uppercase tracking-wide text-primary">ReportFlow</p>
-            <h1 className="mt-3 text-2xl font-semibold text-surface-foreground">Sign in</h1>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">Use your ReportFlow account to access reports, workflow, notifications, and analytics.</p>
+            <div className='mb-8 text-center'>
+                <div className='mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-blue-50 text-primary shadow-soft dark:bg-blue-950/40'>
+                    <ShieldCheck aria-hidden='true' className='size-6' />
+                </div>
+                <p className='text-xs font-semibold uppercase tracking-[0.18em] text-primary'>Welcome back</p>
+                <h1 className='mt-3 font-display text-3xl font-semibold tracking-[-0.04em] text-surface-foreground'>Sign in to ReportFlow</h1>
+                <p className='mt-3 text-sm leading-6 text-muted-foreground'>Access reports, workflow approvals, documents, AI insights, analytics, and administration.</p>
+            </div>
 
-            <form className="mt-8 grid gap-5" onSubmit={submitForm}>
-                {errors.root?.message && (
-                    <Alert description={errors.root.message} icon={<AlertCircle aria-hidden="true" className="size-5" />} intent="danger" title="Sign in failed" />
-                )}
+            <form className='grid gap-5' onSubmit={submitForm}>
+                {errors.root?.message ? (
+                    <Alert description={errors.root.message} icon={<AlertCircle aria-hidden='true' className='size-5' />} intent='danger' title='Sign in failed' />
+                ) : null}
 
-                <Input autoComplete="email" error={errors.email?.message} label="Email" placeholder="you@example.com" type="email" {...register('email')} />
-                <Input autoComplete="current-password" error={errors.password?.message} label="Password" type="password" {...register('password')} />
+                <Input autoComplete='email' error={errors.email?.message} label='Email' leftIcon={<Mail aria-hidden='true' className='size-4' />} placeholder='admin@reportflow.test' type='email' {...register('email')} />
+                <Input autoComplete='current-password' error={errors.password?.message} label='Password' type='password' {...register('password')} />
 
-                <Button leftIcon={<LogIn aria-hidden="true" className="size-4" />} loading={isPending} type="submit">
+                <div className='flex items-center justify-between gap-3 text-sm'>
+                    <label className='inline-flex items-center gap-2 text-muted-foreground'>
+                        <input className='size-4 rounded border-border text-primary focus:ring-primary' type='checkbox' />
+                        Remember me
+                    </label>
+                    <Link className='font-semibold text-primary transition hover:text-blue-700' to='/login'>Forgot password?</Link>
+                </div>
+
+                <Button className='w-full' loading={isPending} rightIcon={<ArrowRight aria-hidden='true' className='size-4' />} size='lg' type='submit'>
                     Sign in
                 </Button>
             </form>
+
+            <p className='mt-7 text-center text-sm text-muted-foreground'>
+                New to ReportFlow?{' '}
+                <Link className='font-semibold text-primary transition hover:text-blue-700' to='/register'>Request access</Link>
+            </p>
         </div>
     );
 }

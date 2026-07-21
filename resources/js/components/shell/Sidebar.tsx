@@ -36,7 +36,7 @@ type NavigationListProps = {
 
 function NavigationList({ compact = false, onNavigate }: NavigationListProps) {
     return (
-        <nav aria-label="Primary navigation" className="flex flex-1 flex-col gap-1 px-3 py-4">
+        <nav aria-label="Primary navigation" className="flex flex-1 flex-col gap-2 px-4 py-6">
             {navigationItems.map((item) => {
                 const Icon = navigationIconMap[item.icon] ?? LayoutDashboard;
 
@@ -44,11 +44,11 @@ function NavigationList({ compact = false, onNavigate }: NavigationListProps) {
                     <NavLink
                         className={({ isActive }) =>
                             cn(
-                                'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary',
+                                'group flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-semibold outline-none transition duration-200 focus:ring-2 focus:ring-primary',
                                 compact && 'justify-center px-2',
                                 isActive
-                                    ? 'bg-primary text-primary-foreground shadow-soft'
-                                    : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                                    ? 'border border-primary/15 bg-blue-50 text-primary shadow-soft dark:bg-blue-950/40'
+                                    : 'text-muted-foreground hover:bg-slate-100 hover:text-foreground dark:hover:bg-muted/60',
                             )
                         }
                         key={item.href}
@@ -90,11 +90,11 @@ export function Sidebar() {
         <>
             <aside
                 className={cn(
-                    'fixed inset-y-0 left-0 z-30 hidden flex-col border-r bg-surface transition-[width] duration-200 lg:flex',
+                    'fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-border/70 bg-white/90 shadow-soft backdrop-blur-xl transition-[width] duration-200 lg:flex dark:bg-surface/90',
                     desktopSidebarCollapsed ? 'w-20' : 'w-72',
                 )}
             >
-                <div className="flex h-16 items-center border-b px-4">
+                <div className="flex h-20 items-center border-b border-border/70 px-5">
                     <ApplicationLogo compact={desktopSidebarCollapsed} />
                 </div>
                 <NavigationList compact={desktopSidebarCollapsed} />
@@ -108,8 +108,8 @@ export function Sidebar() {
                         onClick={() => setMobileSidebarOpen(false)}
                         type="button"
                     />
-                    <aside className="relative flex h-full w-80 max-w-[85vw] flex-col border-r bg-surface shadow-elevated">
-                        <div className="flex h-16 items-center justify-between border-b px-4">
+                    <aside className="relative flex h-full w-80 max-w-[85vw] flex-col border-r border-border/70 bg-surface/95 shadow-premium backdrop-blur-xl">
+                        <div className="flex h-20 items-center justify-between border-b border-border/70 px-5">
                             <ApplicationLogo />
                             <button
                                 aria-label="Close mobile navigation"

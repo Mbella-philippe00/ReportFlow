@@ -19,7 +19,7 @@ const fallbackRolePermissions: Record<PermissionName, readonly string[]> = {
     'profile.view': ['employee', 'manager', 'super-admin'],
     'reports.approve': ['manager', 'super-admin'],
     'reports.create': ['employee', 'manager', 'super-admin'],
-    'reports.final-approve': ['manager', 'super-admin'],
+    'reports.final-approve': ['super-admin'],
     'reports.reject': ['manager', 'super-admin'],
     'reports.submit': ['employee', 'manager', 'super-admin'],
     'reports.update': ['employee', 'manager', 'super-admin'],
@@ -28,19 +28,19 @@ const fallbackRolePermissions: Record<PermissionName, readonly string[]> = {
 };
 
 const reportProgressByStatus: Record<ReportStatusValue, number> = {
+    approved: 100,
     draft: 20,
-    generated: 100,
-    manager_approved: 80,
     rejected: 100,
-    submitted: 55,
+    submitted: 50,
+    under_review: 75,
 };
 
 export const reportStatusOptions = [
     { label: 'All statuses', value: '' },
     { label: 'Draft', value: 'draft' },
     { label: 'Submitted', value: 'submitted' },
-    { label: 'Manager approved', value: 'manager_approved' },
-    { label: 'Generated', value: 'generated' },
+    { label: 'Under Review', value: 'under_review' },
+    { label: 'Approved', value: 'approved' },
     { label: 'Rejected', value: 'rejected' },
 ] as const;
 
@@ -72,13 +72,13 @@ export const hasReportPermission = (user: AuthUser | null, permission: Permissio
 };
 
 export const isReportEditableByWorkflow = (report: WeeklyReport) =>
-    report.status.value === 'draft' || report.status.value === 'rejected';
+    !report.is_read_only && (report.status.value === 'draft' || report.status.value === 'rejected');
 
 export const getReportCapabilities = (report: WeeklyReport, user: AuthUser | null): ReportCapabilities => {
     const canView = hasReportPermission(user, 'reports.view');
     const canCreate = hasReportPermission(user, 'reports.create');
     const canUpdate = hasReportPermission(user, 'reports.update');
-    const canSubmit = hasReportPermission(user, 'reports.submit');
+    const canSubmit = report.available_actions?.includes('submit') ?? (report.status.value === 'draft' && hasReportPermission(user, 'reports.submit'));
     const editable = isReportEditableByWorkflow(report);
 
     return {
@@ -87,7 +87,7 @@ export const getReportCapabilities = (report: WeeklyReport, user: AuthUser | nul
         canEdit: editable && canUpdate,
         canExportPptx: canView && Boolean(report.pptx_file),
         canPrint: canView,
-        canSubmit: report.status.value === 'draft' && canSubmit,
+        canSubmit,
     };
 };
 
@@ -96,7 +96,7 @@ export const getReportProgress = (status: ReportStatusValue) => reportProgressBy
 export const getEmployeeName = (report: WeeklyReport) =>
     report.employee.name ?? report.employee.email ?? 'Unassigned employee';
 
-export const getReportTitle = (report: WeeklyReport) => `${getEmployeeName(report)} · Week ${report.week}`;
+export const getReportTitle = (report: WeeklyReport) => `${getEmployeeName(report)} ? Week ${report.week}`;
 
 export const formatReportDate = (value: string | null | undefined) => {
     if (!value) {

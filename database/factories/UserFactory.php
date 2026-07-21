@@ -42,4 +42,31 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    public function withPassword(string $password): static
+    {
+        return $this->state(fn () => [
+            'password' => Hash::make($password),
+        ]);
+    }
+
+    public function role(string $role): static
+    {
+        return $this->afterCreating(fn (User $user) => $user->assignRole($role));
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->role('super-admin');
+    }
+
+    public function manager(): static
+    {
+        return $this->role('manager');
+    }
+
+    public function employee(): static
+    {
+        return $this->role('employee');
+    }
 }

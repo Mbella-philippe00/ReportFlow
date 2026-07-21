@@ -68,7 +68,7 @@ export const navigationItems: readonly NavigationItem[] = [
         feature: 'settings',
         href: '/settings',
         icon: 'Settings',
-        label: 'Settings',
+        label: 'Administration',
         requiredPermissions: ['settings.manage'],
     },
 ];

@@ -6,7 +6,9 @@ use App\Enums\ReportStatus;
 use App\Models\WeeklyReport;
 use App\Services\AI\WeeklyReportAiService;
 use App\Services\NotificationService;
+use App\Services\Reports\ActivityLogService;
 use App\Services\Reports\ReportWorkflowService;
+use App\Services\Reports\WorkflowStateMachine;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Tests\TestCase;
@@ -23,19 +25,18 @@ class ReportWorkflowServiceTest extends TestCase
             ->create();
 
         $ai = Mockery::mock(WeeklyReportAiService::class);
-
         $ai->shouldReceive('generateExecutiveSummary')
             ->once()
-            ->andReturn('Résumé IA');
+            ->andReturn('AI summary');
 
         $notifications = Mockery::mock(NotificationService::class);
-
-        $notifications->shouldReceive('notifyManagers')
-            ->once();
+        $notifications->shouldReceive('notifyManagers')->once();
 
         $service = new ReportWorkflowService(
             $ai,
-            $notifications
+            $notifications,
+            new WorkflowStateMachine(),
+            new ActivityLogService(),
         );
 
         $this->be($this->createEmployeeUser());
@@ -44,18 +45,8 @@ class ReportWorkflowServiceTest extends TestCase
 
         $report->refresh();
 
-        $this->assertEquals(
-            ReportStatus::SUBMITTED,
-            $report->status
-        );
-
-        $this->assertNotNull(
-            $report->submitted_at
-        );
-
-        $this->assertEquals(
-            'Résumé IA',
-            $report->executive_summary
-        );
+        $this->assertEquals(ReportStatus::SUBMITTED, $report->status);
+        $this->assertNotNull($report->submitted_at);
+        $this->assertSame('AI summary', $report->executive_summary);
     }
 }

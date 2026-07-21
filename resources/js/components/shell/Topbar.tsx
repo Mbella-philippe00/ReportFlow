@@ -28,11 +28,11 @@ export function Topbar() {
     const ThemeIcon = themeIcons[mode];
 
     return (
-        <header className="sticky top-0 z-20 border-b bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/80">
-            <div className="flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-20 border-b border-border/70 bg-white/80 shadow-[0_1px_0_rgb(255_255_255_/_0.75)] backdrop-blur-xl supports-[backdrop-filter]:bg-white/75 dark:bg-surface/80 dark:supports-[backdrop-filter]:bg-surface/75">
+            <div className="flex h-20 items-center gap-3 px-4 sm:px-6 lg:px-8">
                 <button
                     aria-label="Open mobile navigation"
-                    className="inline-flex size-10 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary lg:hidden"
+                    className="inline-flex size-10 items-center justify-center rounded-2xl text-muted-foreground transition duration-200 hover:bg-slate-100 hover:text-foreground dark:hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary lg:hidden"
                     onClick={toggleMobileSidebar}
                     type="button"
                 >
@@ -41,7 +41,7 @@ export function Topbar() {
 
                 <button
                     aria-label="Toggle desktop navigation width"
-                    className="hidden size-10 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary lg:inline-flex"
+                    className="hidden size-10 items-center justify-center rounded-2xl text-muted-foreground transition duration-200 hover:bg-slate-100 hover:text-foreground dark:hover:bg-muted/60 focus:outline-none focus:ring-2 focus:ring-primary lg:inline-flex"
                     onClick={toggleDesktopSidebar}
                     type="button"
                 >
@@ -53,20 +53,20 @@ export function Topbar() {
                 <div className="ml-auto flex items-center gap-2">
                     <button
                         aria-label="Open command palette"
-                        className="hidden items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground transition hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary md:inline-flex"
+                        className="hidden items-center gap-2 rounded-2xl border border-border/70 bg-surface/90 px-4 py-2.5 text-sm font-medium text-muted-foreground shadow-soft transition duration-200 hover:border-primary/25 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary md:inline-flex"
                         onClick={() => setCommandPaletteOpen(true)}
                         type="button"
                     >
                         <Search aria-hidden="true" className="size-4" />
                         <span>Search</span>
-                        <kbd className="rounded-md border bg-surface px-1.5 py-0.5 text-[0.7rem] text-muted-foreground">
+                        <kbd className="rounded-lg border border-border/70 bg-slate-50 px-2 py-1 text-[0.7rem] text-muted-foreground dark:bg-muted">
                             <Command aria-hidden="true" className="inline size-3" /> K
                         </kbd>
                     </button>
 
                     <button
                         aria-label={`Switch theme from ${mode} mode`}
-                        className="inline-flex size-10 items-center justify-center rounded-xl border bg-surface text-muted-foreground transition hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="inline-flex size-10 items-center justify-center rounded-2xl border border-border/70 bg-surface/90 text-muted-foreground shadow-soft transition duration-200 hover:border-primary/25 hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                         onClick={() => setMode(nextThemeMode[mode])}
                         type="button"
                     >

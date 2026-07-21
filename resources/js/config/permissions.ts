@@ -44,7 +44,6 @@ export const rolePermissions: Record<RoleName, readonly PermissionName[]> = {
         'profile.view',
         'reports.approve',
         'reports.create',
-        'reports.final-approve',
         'reports.reject',
         'reports.submit',
         'reports.update',

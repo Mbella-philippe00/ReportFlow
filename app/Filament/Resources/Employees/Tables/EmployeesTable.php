@@ -45,7 +45,7 @@ class EmployeesTable
                 TextColumn::make('validated_reports_count')
                     ->label('Validés')
                     ->state(fn ($record) => $record->weeklyReports()
-                        ->where('status', 'generated')
+                        ->where('status', 'approved')
                         ->count()
                     )
                     ->badge()
@@ -71,7 +71,7 @@ class EmployeesTable
                         }
 
                         $validated = $record->weeklyReports()
-                            ->where('status', 'generated')
+                            ->where('status', 'approved')
                             ->count();
 
                         return round(($validated / $total) * 100, 1).' %';
@@ -89,7 +89,7 @@ class EmployeesTable
                     ->label('Validés')
                     ->state(function ($record) {
                         return $record->weeklyReports()
-                            ->where('status', 'generated')
+                            ->where('status', 'approved')
                             ->count();
                     })
                     ->badge()
@@ -115,7 +115,7 @@ class EmployeesTable
                         }
 
                         $validated = $record->weeklyReports()
-                            ->where('status', 'generated')
+                            ->where('status', 'approved')
                             ->count();
 
                         return round(($validated / $total) * 100, 1).'%';

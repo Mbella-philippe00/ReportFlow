@@ -19,6 +19,7 @@ export type UpdateReportInput = ReportMutationOptions & {
 };
 
 export type ReportWorkflowInput = ReportMutationOptions & {
+    comment?: string;
     id: number;
 };
 
@@ -43,10 +44,16 @@ export const reportsQueryKeys = {
     detail: (id: number) => ['reports', 'detail', id] as const,
     lists: () => ['reports', 'list'] as const,
     list: (params: ListReportsParams = {}) => ['reports', 'list', params] as const,
+    workflowQueue: () => ['reports', 'workflow-queue'] as const,
 };
 
 export const listReports = ({ signal, ...params }: ListReportsOptions = {}) =>
     http<PaginatedApiResponse<WeeklyReport>>(buildReportsPath(params), {
+        signal,
+    });
+
+export const listWorkflowQueue = ({ signal }: ReportMutationOptions = {}) =>
+    http<ApiSuccessResponse<WeeklyReport[]>>('/reports/workflow/queue', {
         signal,
     });
 
@@ -88,8 +95,9 @@ export const rejectReport = ({ id, reason, signal }: RejectReportInput) =>
         signal,
     });
 
-export const approveReport = ({ id, signal }: ReportWorkflowInput) =>
+export const approveReport = ({ comment, id, signal }: ReportWorkflowInput) =>
     http<ApiSuccessResponse<WeeklyReport>>(`/reports/${id}/approve`, {
+        body: comment ? { comment } : {},
         method: 'POST',
         signal,
     });

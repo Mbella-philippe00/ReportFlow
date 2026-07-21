@@ -1,7 +1,7 @@
 import type { ApprovalTimelineItem } from '@/components/business/workflow/ApprovalTimeline';
 import type { WorkflowStep } from '@/components/business/workflow/WorkflowStepper';
 import { formatReportDate, getEmployeeName, getReportTitle, hasReportPermission } from '@/features/reports/utils/report-utils';
-import type { AuthUser, ReportStatusValue, ReportWorkflowAction, WeeklyReport } from '@/types';
+import type { AuthUser, ReportStatusValue, ReportWorkflowAction, WeeklyReport, WorkflowTimelineEvent } from '@/types';
 
 export type WorkflowCapabilities = {
     allowedActions: ReportWorkflowAction[];
@@ -30,23 +30,41 @@ export type WorkflowActionCopy = {
     title: string;
 };
 
-const workflowStepOrder: ReportStatusValue[] = ['draft', 'submitted', 'manager_approved', 'generated'];
+const workflowStepOrder: ReportStatusValue[] = ['draft', 'submitted', 'under_review', 'approved'];
 
 const statusLabels: Record<ReportStatusValue, string> = {
+    approved: 'Approved',
     draft: 'Draft',
-    generated: 'Final approved',
-    manager_approved: 'Manager approved',
     rejected: 'Rejected',
     submitted: 'Submitted',
+    under_review: 'Under Review',
 };
 
-export const isPendingApprovalStatus = (status: ReportStatusValue) => status === 'submitted' || status === 'manager_approved';
+const timelineStatusMap: Record<string, ApprovalTimelineItem['status']> = {
+    completed: 'approved',
+    current: 'current',
+    pending: 'pending',
+    rejected: 'rejected',
+};
+
+const timelineText = (value: ApprovalTimelineItem['title'], fallback = ''): string => {
+    if (['bigint', 'boolean', 'number', 'string'].includes(typeof value)) {
+        return String(value);
+    }
+
+    return fallback;
+};
+
+export const isPendingApprovalStatus = (status: ReportStatusValue) => status === 'submitted' || status === 'under_review';
+
+const backendActions = (report: WeeklyReport): ReportWorkflowAction[] => report.available_actions ?? [];
 
 export const getWorkflowCapabilities = (report: WeeklyReport, user: AuthUser | null): WorkflowCapabilities => {
-    const canSubmit = report.status.value === 'draft' && hasReportPermission(user, 'reports.submit');
-    const canManagerApprove = report.status.value === 'submitted' && hasReportPermission(user, 'reports.approve');
-    const canFinalApprove = report.status.value === 'manager_approved' && hasReportPermission(user, 'reports.final-approve');
-    const canReject = isPendingApprovalStatus(report.status.value) && hasReportPermission(user, 'reports.reject');
+    const actions = backendActions(report);
+    const canSubmit = actions.includes('submit') || ((report.status.value === 'draft' || report.status.value === 'rejected') && hasReportPermission(user, 'reports.submit'));
+    const canManagerApprove = actions.includes('approve') || (report.status.value === 'submitted' && hasReportPermission(user, 'reports.approve'));
+    const canFinalApprove = actions.includes('final-approve') || (report.status.value === 'under_review' && hasReportPermission(user, 'reports.final-approve'));
+    const canReject = actions.includes('reject') || (isPendingApprovalStatus(report.status.value) && hasReportPermission(user, 'reports.reject'));
     const allowedActions: ReportWorkflowAction[] = [];
 
     if (canSubmit) {
@@ -85,20 +103,20 @@ export const getWorkflowActionCopy = (action: ReportWorkflowAction, report: Week
 
     const copies: Record<ReportWorkflowAction, WorkflowActionCopy> = {
         approve: {
-            confirmLabel: 'Approve report',
-            description: `Manager approve ${reportTitle}. The report will move to final approval.`,
-            label: 'Manager approve',
-            successDescription: 'The report moved to final approval.',
-            successTitle: 'Report approved',
-            title: 'Confirm manager approval',
+            confirmLabel: 'Move under review',
+            description: `Move ${reportTitle} under review and send it to final approval. Add a manager comment for the timeline.`,
+            label: 'Start review',
+            successDescription: 'The report moved under review and the final approvers were notified.',
+            successTitle: 'Report under review',
+            title: 'Confirm manager review',
         },
         'final-approve': {
-            confirmLabel: 'Final approve',
-            description: `Final approve ${reportTitle}. The backend will generate the PowerPoint export when available.`,
-            label: 'Final approve',
-            successDescription: 'The report was finally approved and generation was triggered.',
-            successTitle: 'Report finally approved',
-            title: 'Confirm final approval',
+            confirmLabel: 'Approve report',
+            description: `Approve ${reportTitle}. The backend will generate the PowerPoint export when available.`,
+            label: 'Approve',
+            successDescription: 'The report was approved and locked read-only.',
+            successTitle: 'Report approved',
+            title: 'Confirm approval',
         },
         reject: {
             confirmLabel: 'Reject report',
@@ -110,7 +128,7 @@ export const getWorkflowActionCopy = (action: ReportWorkflowAction, report: Week
         },
         submit: {
             confirmLabel: 'Submit report',
-            description: `Submit ${reportTitle} for manager approval.`,
+            description: `Submit ${reportTitle} for manager review.`,
             label: 'Submit',
             successDescription: 'The report entered the approval workflow.',
             successTitle: 'Report submitted',
@@ -127,12 +145,12 @@ const getStepStatus = (report: WeeklyReport, step: ReportStatusValue): WorkflowS
     }
 
     if (report.status.value === 'rejected') {
-        if (step === 'generated') {
+        if (step === 'approved') {
             return 'skipped';
         }
 
-        if (step === 'manager_approved') {
-            return report.validated_at ? 'approved' : 'skipped';
+        if (step === 'under_review') {
+            return report.under_review_at || report.validated_at ? 'approved' : 'skipped';
         }
 
         return step === 'submitted' && report.submitted_at ? 'approved' : 'approved';
@@ -168,16 +186,16 @@ export const buildWorkflowSteps = (report: WeeklyReport): WorkflowStep[] => [
         status: getStepStatus(report, 'submitted'),
     },
     {
-        description: report.validated_at && report.status.value !== 'generated' ? `By ${report.validator ?? 'Manager'} · ${formatReportDate(report.validated_at)}` : 'Waiting for manager approval',
-        id: 'manager_approved',
-        label: statusLabels.manager_approved,
-        status: getStepStatus(report, 'manager_approved'),
+        description: report.under_review_at || report.validated_at ? `By ${report.validator ?? 'Manager'} · ${formatReportDate(report.under_review_at ?? report.validated_at)}` : 'Waiting for manager review',
+        id: 'under_review',
+        label: statusLabels.under_review,
+        status: getStepStatus(report, 'under_review'),
     },
     {
-        description: report.generated_at ? `Generated ${formatReportDate(report.generated_at)}` : 'Waiting for final approval',
-        id: 'generated',
-        label: statusLabels.generated,
-        status: getStepStatus(report, 'generated'),
+        description: report.approved_at || report.generated_at ? `Approved ${formatReportDate(report.approved_at ?? report.generated_at)}` : 'Waiting for final approval',
+        id: 'approved',
+        label: statusLabels.approved,
+        status: getStepStatus(report, 'approved'),
     },
     {
         description: report.rejected_at ? `By ${report.rejector ?? 'Reviewer'} · ${formatReportDate(report.rejected_at)}` : 'Alternative terminal state',
@@ -187,7 +205,20 @@ export const buildWorkflowSteps = (report: WeeklyReport): WorkflowStep[] => [
     },
 ];
 
+const fromBackendTimeline = (report: WeeklyReport, event: WorkflowTimelineEvent): ApprovalTimelineItem => ({
+    actor: event.actor ?? (event.key === 'draft' || event.key === 'submitted' ? getEmployeeName(report) : 'ReportFlow'),
+    description: event.comment ?? getReportTitle(report),
+    id: `${report.id}-${event.key}`,
+    status: timelineStatusMap[event.status] ?? (event.key === 'rejected' ? 'rejected' : 'approved'),
+    timestamp: formatReportDate(event.occurred_at),
+    title: event.label,
+});
+
 export const buildApprovalTimeline = (report: WeeklyReport): ApprovalTimelineItem[] => {
+    if (report.workflow?.timeline?.length) {
+        return report.workflow.timeline.map((event) => fromBackendTimeline(report, event));
+    }
+
     const items: ApprovalTimelineItem[] = [
         {
             actor: getEmployeeName(report),
@@ -210,25 +241,25 @@ export const buildApprovalTimeline = (report: WeeklyReport): ApprovalTimelineIte
         });
     }
 
-    if (report.validated_at) {
+    if (report.under_review_at || report.validated_at) {
         items.push({
-            actor: report.validator ?? 'Approver',
-            description: report.status.value === 'generated' ? 'The final approval was completed.' : 'The manager approval was completed.',
-            id: `${report.id}-validated`,
-            status: report.status.value === 'manager_approved' ? 'current' : 'approved',
-            timestamp: formatReportDate(report.validated_at),
-            title: report.status.value === 'generated' ? 'Final approved' : 'Manager approved',
+            actor: report.validator ?? 'Manager',
+            description: report.manager_comment ?? 'The manager review was completed.',
+            id: `${report.id}-under-review`,
+            status: report.status.value === 'under_review' ? 'current' : 'approved',
+            timestamp: formatReportDate(report.under_review_at ?? report.validated_at),
+            title: 'Under Review',
         });
     }
 
-    if (report.generated_at) {
+    if (report.approved_at || report.generated_at) {
         items.push({
-            actor: report.validator ?? 'ReportFlow',
-            description: 'The backend generated the PowerPoint output.',
-            id: `${report.id}-generated`,
+            actor: report.approver ?? 'Final approver',
+            description: 'The report was approved and locked read-only.',
+            id: `${report.id}-approved`,
             status: 'approved',
-            timestamp: formatReportDate(report.generated_at),
-            title: 'PowerPoint generated',
+            timestamp: formatReportDate(report.approved_at ?? report.generated_at),
+            title: 'Approved',
         });
     }
 
@@ -256,69 +287,19 @@ export const buildApprovalTimeline = (report: WeeklyReport): ApprovalTimelineIte
 };
 
 export const buildWorkflowHistory = (reports: readonly WeeklyReport[]): WorkflowHistoryEvent[] => {
-    const events = reports.flatMap((report) => {
-        const reportEvents: WorkflowHistoryEvent[] = [
-            {
-                actor: getEmployeeName(report),
-                description: getReportTitle(report),
-                id: `${report.id}-created`,
+    const events = reports.flatMap((report) =>
+        buildApprovalTimeline(report)
+            .filter((item) => item.timestamp && item.timestamp !== 'Not available')
+            .map((item): WorkflowHistoryEvent => ({
+                actor: timelineText(item.actor, 'ReportFlow'),
+                description: timelineText(item.description),
+                id: item.id,
                 report,
-                status: 'approved',
-                timestamp: report.created_at,
-                title: 'Draft created',
-            },
-        ];
-
-        if (report.submitted_at) {
-            reportEvents.push({
-                actor: getEmployeeName(report),
-                description: getReportTitle(report),
-                id: `${report.id}-submitted`,
-                report,
-                status: report.status.value === 'submitted' ? 'current' : 'approved',
-                timestamp: report.submitted_at,
-                title: 'Submitted',
-            });
-        }
-
-        if (report.validated_at) {
-            reportEvents.push({
-                actor: report.validator ?? 'Approver',
-                description: getReportTitle(report),
-                id: `${report.id}-validated`,
-                report,
-                status: report.status.value === 'manager_approved' ? 'current' : 'approved',
-                timestamp: report.validated_at,
-                title: report.status.value === 'generated' ? 'Final approved' : 'Manager approved',
-            });
-        }
-
-        if (report.generated_at) {
-            reportEvents.push({
-                actor: report.validator ?? 'ReportFlow',
-                description: getReportTitle(report),
-                id: `${report.id}-generated`,
-                report,
-                status: 'approved',
-                timestamp: report.generated_at,
-                title: 'PowerPoint generated',
-            });
-        }
-
-        if (report.rejected_at) {
-            reportEvents.push({
-                actor: report.rejector ?? 'Reviewer',
-                description: report.rejection_reason ?? getReportTitle(report),
-                id: `${report.id}-rejected`,
-                report,
-                status: 'rejected',
-                timestamp: report.rejected_at,
-                title: 'Rejected',
-            });
-        }
-
-        return reportEvents;
-    });
+                status: item.status,
+                timestamp: timelineText(item.timestamp, report.updated_at),
+                title: timelineText(item.title, 'Workflow update'),
+            })),
+    );
 
     return events.sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime());
 };
