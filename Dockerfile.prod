@@ -16,6 +16,10 @@ WORKDIR /var/www/html
 RUN apk add --no-cache \
         bash \
         curl \
+        autoconf \
+        make \
+        g++ \
+        pkgconf \
         freetype-dev \
         icu-dev \
         jpeg-dev \
