@@ -51,9 +51,14 @@ COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 COPY docker/supervisor/reportflow.conf /etc/supervisor/conf.d/reportflow.conf
 COPY docker/production/entrypoint.sh /usr/local/bin/reportflow-entrypoint
 
-RUN php artisan package:discover --ansi \
+RUN mkdir -p \
+    storage/framework/cache/data \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/logs \
+    bootstrap/cache \
+    && php artisan package:discover --ansi \
     && ln -sfn /var/www/html/storage/app/public public/storage \
-    && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache public \
     && chmod +x /usr/local/bin/reportflow-entrypoint
 
