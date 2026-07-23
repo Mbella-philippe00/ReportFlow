@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -35,6 +37,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (app()->environment('production')) {
+        URL::forceScheme('https');
+    }
         Gate::policy(DatabaseNotification::class, DatabaseNotificationPolicy::class);
         Gate::policy(DocumentComment::class, DocumentCommentPolicy::class);
         Gate::policy(ReportDocument::class, ReportDocumentPolicy::class);
