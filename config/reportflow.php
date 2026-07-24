@@ -21,7 +21,10 @@ return [
 
     'security' => [
         'force_hsts' => (bool) env('REPORTFLOW_FORCE_HSTS', false),
-        'csp' => env('REPORTFLOW_CSP', "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://api.openai.com https://generativelanguage.googleapis.com"),
+        'csp' => env(
+    'REPORTFLOW_CSP',
+    "default-src 'self'; base-uri 'self'; frame-ancestors 'self'; object-src 'none'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://api.openai.com https://generativelanguage.googleapis.com"
+),
         'permissions_policy' => env('REPORTFLOW_PERMISSIONS_POLICY', 'camera=(), microphone=(), geolocation=(), payment=()'),
     ],
 
