@@ -13,7 +13,7 @@ use App\Policies\DocumentCommentPolicy;
 use App\Policies\ReportDocumentPolicy;
 use App\Policies\WeeklyReportPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
+
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
